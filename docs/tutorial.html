@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-yhi18n-page data-lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 标题按运行时语言替换；正文是中英成对的 span（见 lib/doc-i18n.js） -->
+<title data-i18n="tutorialTitle">生词高亮助手 · 使用说明</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../images/icons/32.png">
+<link rel="stylesheet" href="../lib/doc-i18n.css">
+<style>
+  :root {
+    --brand: #10b981;
+    --brand-dark: #059669;
+    --brand-deep: #047857;
+    --brand-light: #ecfdf5;
+    --brand-soft: #f0fdf4;
+    --brand-glow: rgba(16, 185, 129, 0.16);
+    --brand-border: rgba(16, 185, 129, 0.24);
+
+    --bg: #f8fafc;
+    --bg-subtle: #f1f5f9;
+    --card: #ffffff;
+    --card-hover: #ffffff;
+    --border: #e2e8f0;
+    --border-subtle: #edf2f7;
+
+    --text: #0f172a;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+
+    --code-bg: #f1f5f9;
+    --code-border: #e2e8f0;
+    --code-color: #0d9488;
+
+    --note-bg: #f0fdf4;
+    --note-border: #86efac;
+    --note-text: #166534;
+
+    --warn-bg: #fff1f2;
+    --warn-border: #fca5a5;
+    --warn-text: #9f1239;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 14px 34px -4px rgba(15, 23, 42, 0.09);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --maxw: 880px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --brand: #10b981;
+      --brand-dark: #34d399;
+      --brand-deep: #059669;
+      --brand-light: rgba(16, 185, 129, 0.14);
+      --brand-soft: rgba(16, 185, 129, 0.08);
+      --brand-glow: rgba(16, 185, 129, 0.28);
+      --brand-border: rgba(16, 185, 129, 0.35);
+
+      --bg: #0b0f19;
+      --bg-subtle: #131b2a;
+      --card: #151d2e;
+      --card-hover: #192337;
+      --border: #232f46;
+      --border-subtle: #1c2638;
+
+      --text: #f8fafc;
+      --text-2: #94a3b8;
+      --text-3: #64748b;
+
+      --code-bg: #1e293b;
+      --code-border: #334155;
+      --code-color: #5eead4;
+
+      --note-bg: rgba(16, 185, 129, 0.09);
+      --note-border: rgba(16, 185, 129, 0.3);
+      --note-text: #6ee7b7;
+
+      --warn-bg: rgba(244, 63, 94, 0.09);
+      --warn-border: rgba(244, 63, 94, 0.3);
+      --warn-text: #fda4af;
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 6px 24px -2px rgba(0, 0, 0, 0.45);
+      --shadow-lg: 0 16px 40px -4px rgba(0, 0, 0, 0.55);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #26160d 0%, #3d2312 45%, #583317 100%);
+      background-image:
+        radial-gradient(circle at 18% 20%, rgba(247, 222, 189, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 82% 80%, rgba(184, 115, 51, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #26160d 0%, #3d2312 45%, #583317 100%);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 24px;
+  }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.75;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: var(--brand-dark);
+    text-decoration: none;
+    transition: color .2s ease;
+  }
+  a:hover {
+    color: var(--brand);
+    text-decoration: underline;
+  }
+
+  /* 顶部 Hero 区域 - 取色自插件 Logo 仓鼠暖焦糖与温润大地色调 */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, #3d2416 0%, #5d381c 45%, #8a5124 100%);
+    background-image:
+      radial-gradient(circle at 18% 20%, rgba(247, 222, 189, 0.18) 0%, transparent 40%),
+      radial-gradient(circle at 82% 80%, rgba(184, 115, 51, 0.28) 0%, transparent 50%),
+      linear-gradient(135deg, #3d2416 0%, #5d381c 45%, #8a5124 100%);
+    color: #ffffff;
+    padding: 56px 24px 46px;
+    text-align: center;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    box-shadow: 0 14px 38px -8px rgba(61, 36, 22, 0.35);
+    overflow: hidden;
+  }
+
+  .hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(61, 36, 22, 0.22);
+    margin-bottom: 18px;
+    padding: 6px;
+  }
+  .hero-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 12px;
+  }
+
+  .hero .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    letter-spacing: .2px;
+  }
+  .badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fcd34d;
+    box-shadow: 0 0 8px #fcd34d;
+  }
+
+  .hero h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    line-height: 1.25;
+  }
+  .hero .subtitle {
+    margin: 0 auto;
+    max-width: 680px;
+    opacity: .95;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #fcebd7;
+  }
+
+  .hero .ver-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    margin-top: 16px;
+    opacity: .95;
+  }
+  .ver-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fbbf24;
+  }
+
+  /* 快速导航条 */
+  .nav-bar-wrap {
+    max-width: var(--maxw);
+    margin: -20px auto 28px;
+    padding: 0 20px;
+    position: relative;
+    z-index: 5;
+  }
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 10px;
+    box-shadow: var(--shadow-md);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-bar::-webkit-scrollbar { display: none; }
+  .nav-link {
+    flex: 0 0 auto;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    padding: 6px 13px;
+    border-radius: 999px;
+    transition: all .18s ease;
+    white-space: nowrap;
+  }
+  .nav-link:hover {
+    color: var(--brand-dark);
+    background: var(--brand-light);
+    text-decoration: none;
+  }
+
+  /* 内容容器 */
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  /* 卡片模块 */
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 30px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .2s ease, border-color .2s ease;
+  }
+  section:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-subtle);
+  }
+
+  section h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 16px;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -.3px;
+    color: var(--text);
+  }
+  section h2 .num {
+    flex: 0 0 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--brand-light);
+    color: var(--brand-deep);
+    border: 1px solid var(--brand-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  section h3 {
+    font-size: 16px;
+    font-weight: 650;
+    margin: 24px 0 10px;
+    color: var(--text);
+  }
+
+  p { margin: 10px 0; color: var(--text-2); }
+  ul, ol { padding-left: 22px; color: var(--text-2); }
+  li { margin: 8px 0; }
+  b { color: var(--text); }
+
+  /* 特性网格 */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .feat {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    background: var(--bg-subtle);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .feat:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--brand-border);
+  }
+  .feat-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .feat-icon {
+    flex: 0 0 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .feat b {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .feat .feat-copy {
+    color: var(--text-2);
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  /* 步骤流程 */
+  .steps {
+    counter-reset: step;
+    padding-left: 0;
+    list-style: none;
+    margin: 16px 0;
+  }
+  .steps li {
+    position: relative;
+    padding: 16px 18px 16px 58px;
+    margin: 12px 0;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    transition: border-color .2s ease;
+  }
+  .steps li:hover {
+    border-color: var(--brand-border);
+  }
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px var(--brand-glow);
+  }
+
+  /* 状态胶囊标签 */
+  .kv {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .kv .pill {
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    border: 1px solid var(--brand-border);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 550;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kv .pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand-dark);
+  }
+
+  /* 表格 */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin: 16px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--card);
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    background: var(--bg-subtle);
+    font-weight: 650;
+    color: var(--text);
+    font-size: 13.5px;
+    letter-spacing: .2px;
+  }
+  tr:nth-child(even) td {
+    background: var(--border-subtle);
+  }
+
+  /* 提示框与警告框 */
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-family: "SFMono-Regular", Consolas, Menlo, Monaco, monospace;
+    font-size: 13px;
+    color: var(--code-color);
+  }
+  .note {
+    border-left: 4px solid var(--brand);
+    background: var(--note-bg);
+    border: 1px solid var(--note-border);
+    border-left-width: 4px;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    margin: 16px 0;
+    color: var(--note-text);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .warn {
+    border-left: 4px solid #ef4444;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-left-width: 4px;
+    padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    margin: 16px 0;
+    color: var(--warn-text);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* FAQ */
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    background: var(--bg-subtle);
+    transition: border-color .18s ease;
+  }
+  .faq-item:hover {
+    border-color: var(--brand-border);
+  }
+  .faq-q {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--brand-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .faq-a {
+    margin-top: 8px;
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* 联系作者与群卡片 */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 18px;
+    align-items: stretch;
+  }
+  .contact-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    background: var(--bg-subtle);
+    display: flex;
+    flex-direction: column;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+  .contact-card:hover {
+    border-color: var(--brand-border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .contact-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .contact-icon-badge {
+    flex: 0 0 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    border: 1px solid var(--brand-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .contact-head-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .contact-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .contact-subtitle {
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+
+  .contact-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .contact-desc {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.65;
+  }
+
+  /* 邮箱与微信联系卡片交互条 */
+  .contact-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 13px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    text-decoration: none;
+    transition: all .2s ease;
+    margin: 8px 0 16px;
+    user-select: text;
+  }
+  .contact-badge:hover {
+    border-color: var(--brand);
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .contact-badge-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .contact-badge-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-dark);
+  }
+  .contact-badge-val {
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    font-size: 14.5px;
+    font-weight: 650;
+    color: var(--brand-dark);
+    word-break: break-all;
+    user-select: all;
+  }
+  .contact-badge-tag {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: var(--brand-light);
+    color: var(--brand-dark);
+    border: 1px solid var(--brand-border);
+  }
+
+  /* 底部小提示 */
+  .contact-tip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin-top: auto;
+  }
+  .tip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--brand-dark);
+    opacity: .75;
+  }
+
+  /* 页脚 */
+  footer {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 13px;
+    padding: 32px 20px 24px;
+    line-height: 1.8;
+  }
+  footer .logo {
+    font-weight: 750;
+    font-size: 16px;
+    color: var(--brand-dark);
+    margin-bottom: 6px;
+  }
+
+  /* 响应式适配 */
+  @media (max-width: 680px) {
+    .hero {
+      padding: 44px 18px 36px;
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+    }
+    .hero h1 { font-size: 26px; }
+    .hero .subtitle { font-size: 14.5px; }
+    .hero-icon { width: 56px; height: 56px; }
+    .wrap { padding: 0 16px 64px; }
+    section { padding: 22px 18px; margin-bottom: 18px; }
+    .feat-grid { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .steps li { padding: 14px 14px 14px 50px; font-size: 14px; }
+    .steps li::before { left: 12px; top: 14px; width: 26px; height: 26px; font-size: 12px; }
+    th, td { padding: 10px 12px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Hero 头部 -->
+  <header class="hero">
+    <div class="doc-lang" role="group" aria-label="界面语言 / Language">
+      <button type="button" data-lang-set="zh_CN" lang="zh-CN" aria-pressed="true">中文</button>
+      <button type="button" data-lang-set="en" lang="en" aria-pressed="false">English</button>
+    </div>
+
+    <div class="hero-icon">
+      <img src="../images/icons/128.png" alt="生词高亮助手 Logo" width="56" height="56">
+    </div>
+
+    <div>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span class="i18n-zh">Chrome 浏览器扩展</span>
+        <span class="i18n-en">Chrome Extension</span>
+      </div>
+    </div>
+
+    <h1>
+      <span class="i18n-zh">生词高亮助手</span>
+      <span class="i18n-en">Vocabulary Highlighter</span>
+    </h1>
+
+    <p class="subtitle">
+      <span class="i18n-zh">把有道词典生词本带到任意网页 —— 自动高亮 · 悬浮查词 · 即点发音 · 随手收藏</span>
+      <span class="i18n-en">Your Youdao wordbook on every web page — auto highlight, hover definition, instant audio & easy save</span>
+    </p>
+
+    <div class="ver-pill">
+      <span class="ver-dot"></span>
+      <span class="i18n-zh">版本 v<span class="app-version">1.0.1</span> · 官方使用说明</span>
+      <span class="i18n-en">Version <span class="app-version">1.0.1</span> · Official Guide</span>
+    </div>
+  </header>
+
+  <!-- 快捷导航 -->
+  <div class="nav-bar-wrap">
+    <nav class="nav-bar" aria-label="快捷导航 / Quick navigation">
+      <a href="#feat" class="nav-link"><span class="i18n-zh">功能特性</span><span class="i18n-en">Features</span></a>
+      <a href="#quick" class="nav-link"><span class="i18n-zh">快速上手</span><span class="i18n-en">Quick Start</span></a>
+      <a href="#highlight" class="nav-link"><span class="i18n-zh">变体匹配</span><span class="i18n-en">Word Forms</span></a>
+      <a href="#hover" class="nav-link"><span class="i18n-zh">悬浮查词</span><span class="i18n-en">Hover & Audio</span></a>
+      <a href="#add" class="nav-link"><span class="i18n-zh">加词删词</span><span class="i18n-en">Add & Delete</span></a>
+      <a href="#voice" class="nav-link"><span class="i18n-zh">发音设置</span><span class="i18n-en">Voice</span></a>
+      <a href="#color" class="nav-link"><span class="i18n-zh">高亮配色</span><span class="i18n-en">Colors</span></a>
+      <a href="#sync" class="nav-link"><span class="i18n-zh">同步登录</span><span class="i18n-en">Sync & Login</span></a>
+      <a href="#login" class="nav-link"><span class="i18n-zh">失效处理</span><span class="i18n-en">Session</span></a>
+      <a href="#faq" class="nav-link"><span class="i18n-zh">常见问题</span><span class="i18n-en">FAQ</span></a>
+      <a href="#privacy" class="nav-link"><span class="i18n-zh">隐私说明</span><span class="i18n-en">Privacy</span></a>
+      <a href="#contact" class="nav-link"><span class="i18n-zh">联系作者</span><span class="i18n-en">Contact</span></a>
+    </nav>
+  </div>
+
+  <div class="wrap">
+
+    <!-- 1. 功能特性 -->
+    <section id="feat">
+      <h2><span class="num">★</span><span class="i18n-zh">功能特性</span><span class="i18n-en">Features</span></h2>
+      <p><span class="i18n-zh">「生词高亮助手」将你在有道词典积累的生词本无缝带到日常浏览的网页中，把每一次英文阅读都变成轻松温习单词的机会。</span><span class="i18n-en">Vocabulary Highlighter maps your Youdao Dictionary wordbook onto everyday web browsing, turning every English article into an opportunity to review words effortlessly.</span></p>
+
+      <div class="feat-grid">
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">✦</span>
+            <b><span class="i18n-zh">网页生词自动高亮</span><span class="i18n-en">Auto Page Highlighting</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">打开网页自动扫描，高亮生词本中的每个词；支持单页应用与无限滚动内容实时动态监听。</span>
+          <span class="feat-copy i18n-en">Scans and marks your saved words on any web page; supports SPAs and dynamically loaded text in real time.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">⚡</span>
+            <b><span class="i18n-zh">变体智能匹配（精度优先）</span><span class="i18n-en">Smart Inflection Matching</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">大小写、复数、时态、所有格智能识别，宁缺毋滥，有效防止误伤其他日常词汇。</span>
+          <span class="feat-copy i18n-en">Matches case, plurals, verb tenses, and possessives with precision-first rules to prevent false positives.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">💬</span>
+            <b><span class="i18n-zh">悬浮即查音标与释义</span><span class="i18n-en">Hover Definition Bubble</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">鼠标停留稍作等待（600ms）平滑弹出气泡，展示音标与精简释义；贴近视口边缘时智能防遮挡。</span>
+          <span class="feat-copy i18n-en">Hover for 600ms to open a clean definition bubble with phonetics; smart edge guards prevent clipping.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">🔊</span>
+            <b><span class="i18n-zh">真人发音与语音选择</span><span class="i18n-en">Audio & Voice Options</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">悬浮自动朗读或点击气泡内喇叭发音；支持选择 Google 在线语音或本地系统英语语音。</span>
+          <span class="feat-copy i18n-en">Audio on hover or on-demand speaker click; choose between Google online voices and system voices.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">➕</span>
+            <b><span class="i18n-zh">两种随手添加方式</span><span class="i18n-en">Two Ways to Add Words</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">悬浮未收录词点击气泡加号，或直接在网页上划词选中文本一键加入有道生词本。</span>
+          <span class="feat-copy i18n-en">Save words by clicking "+" in the hover bubble, or simply select any word on the page to add it instantly.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">🗑️</span>
+            <b><span class="i18n-zh">悬浮删除与就地撤销</span><span class="i18n-en">Hover Delete & Undo</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">已收录生词气泡中可一键删除，添加后支持立即撤销；一处删除，整页该词高亮同步移除。</span>
+          <span class="feat-copy i18n-en">Trash button in bubble to delete words with instant undo; removing a word clears all its highlights on the page.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">☁️</span>
+            <b><span class="i18n-zh">有道云同步与自动同步</span><span class="i18n-en">Cloud Sync & Auto Sync</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">一键双向拉取有道生词本；后台定时 Alarms 每日自动拉取最新词库，免去手动操作。</span>
+          <span class="feat-copy i18n-en">One-click sync with your Youdao wordbook, plus background alarms for automatic daily synchronization.</span>
+        </div>
+
+        <div class="feat">
+          <div class="feat-head">
+            <span class="feat-icon">🔒</span>
+            <b><span class="i18n-zh">本地优先与隐私安全</span><span class="i18n-en">Local-First & Private</span></b>
+          </div>
+          <span class="feat-copy i18n-zh">生词缓存于浏览器本地存储，离线可查；不记录浏览历史，无任何远端数据埋点上报。</span>
+          <span class="feat-copy i18n-en">Words are stored locally on your device; no browsing tracking, no telemetry and no third-party uploads.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 快速上手 -->
+    <section id="quick">
+      <h2><span class="num">1</span><span class="i18n-zh">快速上手</span><span class="i18n-en">Quick Start</span></h2>
+      <ol class="steps">
+        <li>
+          <span class="i18n-zh">点击浏览器工具栏的插件图标，在设置弹窗中点击<b>「登录」</b>，在跳转的有道官网完成账号登录。</span>
+          <span class="i18n-en">Click the extension icon in your browser toolbar, then click <b>Sign in</b> in the popup to log in to Youdao.</span>
+        </li>
+        <li>
+          <span class="i18n-zh">登录成功后点击<b>「同步」</b>按钮，将你的有道生词本完整拉取到本地浏览器存储中。</span>
+          <span class="i18n-en">After signing in, click the <b>Sync</b> button to pull and store your full Youdao wordbook locally.</span>
+        </li>
+        <li>
+          <span class="i18n-zh">打开任意英文网页或文章，生词本里的单词及其变体形态将自动<b>高亮</b>呈现。</span>
+          <span class="i18n-en">Open any English web page: words from your wordbook and their inflected forms are <b>highlighted</b> automatically.</span>
+        </li>
+        <li>
+          <span class="i18n-zh">鼠标<b>停在生词上稍候片刻</b>（约 600ms），浮出音标与释义气泡；开启发音时触碰即读。</span>
+          <span class="i18n-en"><b>Rest the cursor</b> on a word for a moment (~600ms) to open the definition bubble; audio plays automatically when enabled.</span>
+        </li>
+        <li>
+          <span class="i18n-zh">遇到未收录的新生词，鼠标悬浮点击<b>「+」</b>加号，或直接<b>划选文字</b>点击「加入生词本」即可随手收藏。</span>
+          <span class="i18n-en">Spot an unfamiliar word? Hover and click <b>"+"</b>, or <b>select text</b> on the page and click "Add to wordbook" to save it.</span>
+        </li>
+      </ol>
+
+      <div class="kv">
+        <span class="pill"><span class="i18n-zh">生词高亮：默认开启</span><span class="i18n-en">Highlighting: On by default</span></span>
+        <span class="pill"><span class="i18n-zh">悬浮发音：默认开启</span><span class="i18n-en">Speak on hover: On by default</span></span>
+        <span class="pill"><span class="i18n-zh">自动同步：每日自动</span><span class="i18n-en">Auto sync: Daily in background</span></span>
+      </div>
+    </section>
+
+    <!-- 3. 生词高亮与变体匹配 -->
+    <section id="highlight">
+      <h2><span class="num">2</span><span class="i18n-zh">生词高亮与变体匹配</span><span class="i18n-en">Highlighting & Word Forms</span></h2>
+      <p>
+        <span class="i18n-zh">扩展会将生词本里的每一个单词与网页文字精准对照，命中处施加柔和高亮底色。为避免「生词本里存了原形，网页里因为变体却不高亮」的困扰，匹配引擎遵循<b>「精度优先（Precision First）」</b>原则，智能支持常见的词形变换：</span>
+        <span class="i18n-en">The extension matches every word in your wordbook against page text and applies a custom highlight. To avoid missing inflected words, the engine uses <b>precision-first</b> heuristics to cover common English word forms:</span>
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><span class="i18n-zh">变体类型</span><span class="i18n-en">Form Type</span></th>
+              <th><span class="i18n-zh">匹配示例（生词本 → 网页命中）</span><span class="i18n-en">Example (Saved → Matched)</span></th>
+              <th><span class="i18n-zh">规则与说明</span><span class="i18n-en">Rule Description</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b><span class="i18n-zh">大小写变化</span><span class="i18n-en">Case</span></b></td>
+              <td><code>apple</code> → <code>Apple</code> / <code>APPLE</code></td>
+              <td><span class="i18n-zh">句首首字母大写、专有名词、全大写标题均能命中</span><span class="i18n-en">Matches sentence capitals, title case and ALL-CAPS</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">单复数 / 第三人称单数</span><span class="i18n-en">Plural / 3rd Person</span></b></td>
+              <td><code>cat</code> → <code>cats</code>；<code>match</code> → <code>matches</code>；<code>run</code> → <code>runs</code></td>
+              <td><span class="i18n-zh">规则复数词尾（-s, -es, -ies）及动词单三形式</span><span class="i18n-en">Regular plural endings (-s, -es, -ies) and 3rd person verbs</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">动词时态（分词与过去式）</span><span class="i18n-en">Verb Tenses</span></b></td>
+              <td><code>play</code> → <code>playing</code> / <code>played</code></td>
+              <td><span class="i18n-zh">现在分词（-ing）、过去式与过去分词（-ed）</span><span class="i18n-en">Present participles (-ing) and past tenses (-ed)</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">比较级与最高级</span><span class="i18n-en">Comparatives</span></b></td>
+              <td><code>big</code> → <code>bigger</code> / <code>biggest</code></td>
+              <td><span class="i18n-zh">白名单形容词变体（-er, -est），防止误伤名词</span><span class="i18n-en">Whitelisted adjective forms to avoid false positives</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">所有格归一化</span><span class="i18n-en">Possessives</span></b></td>
+              <td><code>patient's</code> / <code>patients'</code> → <code>patient</code></td>
+              <td><span class="i18n-zh">自动剥离名词所有格并准确提取词干进行高亮和取词</span><span class="i18n-en">Normalizes possessive apostrophes to match base stems</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">缩写、连字符与重音词</span><span class="i18n-en">Compounds & Accents</span></b></td>
+              <td><code>don't</code>、<code>state-of-the-art</code>、<code>café</code></td>
+              <td><span class="i18n-zh">连字符复合词、常用缩写及带拉丁重音的词完整识别</span><span class="i18n-en">Hyphenated compounds, contractions and accented words</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="i18n-zh"><b>精度优先原则：</b>错高亮比漏高亮更影响学习体验（会导致用户误认词义）。因此匹配引擎经过严格收敛，如 <code>hard</code> 不会误匹配为 <code>hardly</code>，<code>use</code> 不会误匹配为 <code>user</code>。动态加载的内容（如推特流、单页应用 SPA）会被自动监听并即时高亮，无需手动刷新页面。</span>
+        <span class="i18n-en"><b>Precision-First Philosophy:</b> A false highlight hurts readability and learning. The engine strictly guards against stem collisions (e.g. <code>hard</code> never matches <code>hardly</code>, <code>use</code> never matches <code>user</code>). Dynamic page updates (SPAs, infinite scroll feeds) are automatically monitored and highlighted without refreshing.</span>
+      </div>
+    </section>
+
+    <!-- 4. 悬浮释义与发音 -->
+    <section id="hover">
+      <h2><span class="num">3</span><span class="i18n-zh">悬浮释义与发音</span><span class="i18n-en">Hover: Definitions & Audio</span></h2>
+
+      <h3><span class="i18n-zh">1. 已收录生词的悬浮体验</span><span class="i18n-en">1. Hovering on Saved Words</span></h3>
+      <p>
+        <span class="i18n-zh">当开启「悬浮发音」时，鼠标一碰到高亮生词就会<b>立即朗读发音</b>，无需点击；把鼠标停在生词上稍作停留（约 600ms），即刻浮出轻量释义气泡，包含单词原形、音标、中文释义、发音喇叭及删除按钮。</span>
+        <span class="i18n-en">When "Speak on hover" is enabled, touching a highlighted word <b>speaks it immediately</b>. Resting the cursor on the word for ~600ms opens a sleek bubble with phonetics, definitions, a speaker button and a delete action.</span>
+      </p>
+
+      <h3><span class="i18n-zh">2. 未收录新词的悬浮体验</span><span class="i18n-en">2. Hovering on Unsaved Words</span></h3>
+      <p>
+        <span class="i18n-zh">阅读中遇到未收录但想了解的英文单词，把鼠标悬浮在该单词上稍作停留，同样会弹出释义气泡并朗读发音。气泡右上角提供<b>「+」加号按钮</b>，点击即可一键加入生词本。</span>
+        <span class="i18n-en">Hovering over any unsaved English word opens the same bubble with definition and pronunciation, plus an <b>"+" add button</b> to collect it into your wordbook on the spot.</span>
+      </p>
+
+      <div class="note">
+        <span class="i18n-zh"><b>防误触与边缘保护：</b>只有鼠标真正静止停留在单词上方才会触发浮层，快速划过或停留在单词间隙不会误弹；靠近屏幕或视口边缘时会自动调整浮层朝向，鼠标离开后平滑淡出，不遮挡连续阅读。</span>
+        <span class="i18n-en"><b>Accuracy & Edge Guard:</b> The bubble only appears when the cursor rests steadily over a word, ignoring quick sweeps and gaps. Viewport edge guards prevent overflowing, and the bubble fades out smoothly when you move away.</span>
+      </div>
+    </section>
+
+    <!-- 5. 加入 / 删除生词 -->
+    <section id="add">
+      <h2><span class="num">4</span><span class="i18n-zh">加入与删除生词</span><span class="i18n-en">Adding & Removing Words</span></h2>
+
+      <p><span class="i18n-zh">扩展提供了极为轻巧的增删交互，全部采用插件自研的页面内提示控件，绝不调用浏览器原生 <code>alert</code> / <code>confirm</code> 打断你的阅读流程：</span><span class="i18n-en">The extension provides two quick ways to add words and instant deletion, using native in-page controls without disruptive browser popups:</span></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th><span class="i18n-zh">操作</span><span class="i18n-en">Action</span></th>
+              <th><span class="i18n-zh">触发途径</span><span class="i18n-en">How to Trigger</span></th>
+              <th><span class="i18n-zh">功能与交互细节</span><span class="i18n-en">Details</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b><span class="i18n-zh">悬浮气泡添加</span><span class="i18n-en">Hover Bubble Add</span></b></td>
+              <td><span class="i18n-zh">气泡内「+」加号按钮</span><span class="i18n-en">Plus button in bubble</span></td>
+              <td><span class="i18n-zh">悬浮未收录词时出现，点击即可加入有道生词本；添加后按钮立即切换为删除图标，支持快速撤销。</span><span class="i18n-en">Available on unsaved words. Once added, the button flips to a trash icon for instant undo.</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">网页划词添加</span><span class="i18n-en">Text Selection Add</span></b></td>
+              <td><span class="i18n-zh">选中文本旁弹出的快捷菜单</span><span class="i18n-en">Quick menu beside selection</span></td>
+              <td><span class="i18n-zh">在网页中选中任意英文单词或短语，选区旁即刻弹出「加入生词本」菜单，轻点即可收藏入库。</span><span class="i18n-en">Highlight any English word on the page; a floating "Add to wordbook" pill appears near the selection.</span></td>
+            </tr>
+            <tr>
+              <td><b><span class="i18n-zh">悬浮一键删除</span><span class="i18n-en">Hover Delete</span></b></td>
+              <td><span class="i18n-zh">气泡内「🗑️」垃圾桶按钮</span><span class="i18n-en">Trash button in bubble</span></td>
+              <td><span class="i18n-zh">悬浮已收藏词时出现，点击后弹出确认框，确认后整页该词的所有高亮标记会立即同步移除。</span><span class="i18n-en">Available on saved words. One click clears all highlights of that word across the active page.</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="i18n-zh"><b>登录态防护：</b>未登录或登录态过期时，浮层自动收缩为纯查词状态，不显示增删按钮，避免无效请求；完成登录后增删功能即刻恢复。</span>
+        <span class="i18n-en"><b>Sign-in Guard:</b> When signed out or when your session expires, action buttons are hidden and the bubble functions strictly as a dictionary reader to prevent failed requests.</span>
+      </div>
+    </section>
+
+    <!-- 6. 发音设置 -->
+    <section id="voice">
+      <h2><span class="num">5</span><span class="i18n-zh">发音与语音设置</span><span class="i18n-en">Audio & Voice Settings</span></h2>
+      <ul>
+        <li>
+          <span class="i18n-zh"><b>悬浮发音开关：</b>在弹窗「功能」区可随时关闭。关闭后鼠标划过生词不再自动发音，保留气泡内喇叭点击发音。</span>
+          <span class="i18n-en"><b>Speak on hover toggle:</b> Turn it off under Features in the popup if you prefer silence while skimming; you can still click the speaker in the bubble.</span>
+        </li>
+        <li>
+          <span class="i18n-zh"><b>智能语音选择：</b>默认「自动（推荐）」会按「Google 在线英语语音 → 系统本地英语语音」的优先级智能挑选音质最好的发音人。</span>
+          <span class="i18n-en"><b>Smart voice selection:</b> "Auto (recommended)" intelligently selects high-quality Google English online voices first, then falls back to local voices.</span>
+        </li>
+        <li>
+          <span class="i18n-zh"><b>手动试听确认：</b>在下拉列表中选择美式英语（en-US）或英式英语（en-GB）嗓音后，点击试听按钮可即时朗读示例词确认效果。</span>
+          <span class="i18n-en"><b>Preview button:</b> Pick a specific US or UK English voice from the dropdown and hit the speaker preview button to hear sample pronunciation.</span>
+        </li>
+      </ul>
+
+      <div class="note">
+        <span class="i18n-zh"><b>系统英语语音补充：</b>若语音下拉列表为空，表明系统尚未安装英语语音包。macOS 用户可在「系统设置 → 辅助功能 → 朗读内容 → 语音」添加英语语音；Windows 用户可在「设置 → 时间和语言 → 语音 → 添加语音」安装。</span>
+        <span class="i18n-en"><b>Installing System Voices:</b> If the voice dropdown is empty, your OS lacks English voice packs. On macOS, add voices in System Settings → Accessibility → Spoken Content → System Voice. On Windows, use Settings → Time &amp; language → Speech → Add voices.</span>
+      </div>
+    </section>
+
+    <!-- 7. 高亮颜色自定义 -->
+    <section id="color">
+      <h2><span class="num">6</span><span class="i18n-zh">高亮配色与深色模式</span><span class="i18n-en">Highlight Colours & Dark Mode</span></h2>
+      <p>
+        <span class="i18n-zh">在插件弹窗的「高亮」区，提供 7 种设计师精选的高对比预设底色（黄、绿、粉、蓝、橙、紫、灰），同时支持双拾色器自由微调<b>背景色</b>与<b>文字色</b>：</span>
+        <span class="i18n-en">Under Highlight in the popup, you can choose from 7 vibrant preset palettes (yellow, green, pink, blue, orange, purple, grey) or use dual color pickers to customize <b>background</b> and <b>text</b> colors:</span>
+      </p>
+
+      <ul>
+        <li><span class="i18n-zh"><b>全标签页实时生效：</b>修改配色后，所有已打开的网页标签页即刻同步重绘高亮，无需逐个刷新。</span><span class="i18n-en"><b>Instant multi-tab sync:</b> Changes apply across all open tabs simultaneously without manual reloads.</span></li>
+        <li><span class="i18n-zh"><b>深色模式智能自适应：</b>插件弹窗、气泡、添加菜单均能自动跟随操作系统 Dark Mode 调整质感，既舒适护眼又清晰易读。</span><span class="i18n-en"><b>Adaptive Dark Mode:</b> Popups, bubbles and context menus seamlessly adapt to your system Dark Mode for comfortable reading.</span></li>
+      </ul>
+    </section>
+
+    <!-- 8. 同步与登录 -->
+    <section id="sync">
+      <h2><span class="num">7</span><span class="i18n-zh">同步机制与账号登录</span><span class="i18n-en">Sync & Account Sign-In</span></h2>
+      <p><span class="i18n-zh">生词本数据来自有道词典官方服务，扩展通过安全的浏览器会话认证进行同步：</span><span class="i18n-en">Your vocabulary is sourced from Youdao Dictionary and synchronized securely through your browser session:</span></p>
+
+      <ol class="steps">
+        <li><span class="i18n-zh">弹窗「词典」卡片点击<b>「登录」</b>，浏览器打开有道官方页面完成登录。</span><span class="i18n-en">Click <b>Sign in</b> in the Dictionary card to complete login on the official Youdao site.</span></li>
+        <li><span class="i18n-zh">登录成功后卡片显示有道图标与生词总数，点击<b>「同步」</b>按钮拉取完整词库。</span><span class="i18n-en">Once signed in, the card shows your wordbook total; click <b>Sync</b> to pull all entries.</span></li>
+        <li><span class="i18n-zh">同步完成后刷新或打开新网页，词库中的单词即会被自动高亮。</span><span class="i18n-en">Once synced, all words are automatically matched and highlighted on target pages.</span></li>
+      </ol>
+
+      <h3><span class="i18n-zh">自动同步（推荐开启）</span><span class="i18n-en">Automatic Daily Sync</span></h3>
+      <p><span class="i18n-zh">开启「功能」区的<b>「自动同步」</b>后，后台服务会借助 Chrome Alarm 定时器每日自动静默拉取更新，你在手机或网页端收藏的新词第二天会自动高亮。关闭后仅在手动点「同步」时更新。</span><span class="i18n-en">Enabling <b>Auto sync</b> lets the background service automatically refresh your vocabulary daily via Chrome Alarms, keeping your wordbook continuously up to date.</span></p>
+
+      <h3><span class="i18n-zh">登出安全保护</span><span class="i18n-en">Sign-Out Safety</span></h3>
+      <p><span class="i18n-zh">点击卡片右上角的<b>「登出」</b>按钮即可退出登录。登出后<b>已同步到本地的生词本完整保留</b>，网页高亮继续生效，但为了账号安全会隐藏增删生词入口。</span><span class="i18n-en">Click <b>Sign out</b> anytime. Already synced words <b>remain on this device</b> and highlighting continues, while word editing is disabled for security.</span></p>
+    </section>
+
+    <!-- 9. 登录失效处理 -->
+    <section id="login">
+      <h2><span class="num">8</span><span class="i18n-zh">登录失效与自愈机制</span><span class="i18n-en">Session Expiration & Recovery</span></h2>
+      <p><span class="i18n-zh">有道登录状态可能因 Cookie 过期或长时间未活动而失效。扩展具备完善的健康探测与自愈机制：</span><span class="i18n-en">Youdao cookies may expire over time. The extension includes proactive session monitoring and self-healing:</span></p>
+
+      <ul>
+        <li><span class="i18n-zh">在同步生词本或添加/删除单词时发现登录失效；</span><span class="i18n-en">Detected when syncing wordbooks or adding/deleting vocabulary;</span></li>
+        <li><span class="i18n-zh">打开插件弹窗时检测到会话 Cookie 已过期。</span><span class="i18n-en">Detected upon opening the popup when session cookies have expired.</span></li>
+      </ul>
+
+      <div class="warn">
+        <span class="i18n-zh"><b>红色自愈横幅：</b>检测到会话失效后，网页顶部会浮出显目的红色提示横幅，提供「重新登录」按钮。点击后跳转有道登录；登录完毕切回网页，扩展会自动重新校验登录态并拉取生词本，横幅自动平滑消失，无需反复操作。</span>
+        <span class="i18n-en"><b>Self-Healing Banner:</b> When a session expires, a red top banner appears with a <b>Sign in again</b> button. Once you log in and switch back to your tab, the extension automatically re-checks authentication, re-syncs, and dismisses the banner.</span>
+      </div>
+    </section>
+
+    <!-- 10. FAQ -->
+    <section id="faq">
+      <h2><span class="num">？</span><span class="i18n-zh">常见问题解答</span><span class="i18n-en">Frequently Asked Questions</span></h2>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：为什么有的生词明明在生词本里，网页上却没有高亮？</span><span class="i18n-en">Q: Why is a word in my wordbook not highlighted on the page?</span></div>
+          <div class="faq-a"><span class="i18n-zh">请依次检查：① 弹窗中「生词高亮」总开关是否开启；② 是否登录并成功点过「同步」（生词总数大于 0）；③ 该词是否为非常规不规则变体，若是可直接在有道生词本补充该形态。</span><span class="i18n-en">Check three things: ① The "Highlighting" toggle is turned on; ② You have signed in and clicked "Sync"; ③ The word is an irregular form the matcher missed (add that exact form in your Youdao wordbook).</span></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：鼠标停在生词上，为什么没有弹出释义气泡？</span><span class="i18n-en">Q: Why doesn't the definition bubble pop up when hovering?</span></div>
+          <div class="faq-a"><span class="i18n-zh">气泡设计了约 600ms 的悬停防抖延时，需要将鼠标光标平稳停在单词字符正上方；快速扫过或停留在单词间的空白区域不会触发，以防影响正常阅读。</span><span class="i18n-en">A 600ms steady hover is required to prevent accidental triggers while reading. Ensure the pointer rests directly on the word rather than in margin gaps.</span></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：划词选中文本后，为什么没有出现「加入生词本」菜单？</span><span class="i18n-en">Q: Why doesn't the "Add to wordbook" pill appear when selecting text?</span></div>
+          <div class="faq-a"><span class="i18n-zh">划词添加功能需要处于已登录状态；若选中的单词已经在生词本中，为避免重复操作也不会弹出。双击文字会优先选词并取消菜单，给双击操作留出容错。</span><span class="i18n-en">Text selection requires an active sign-in. If the selected word is already in your wordbook, the menu is omitted to avoid duplicate entries.</span></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：发音没有声音怎么排查？</span><span class="i18n-en">Q: How do I troubleshoot missing pronunciation audio?</span></div>
+          <div class="faq-a"><span class="i18n-zh">首先确认弹窗中「悬浮发音」开关已打开；其次检查弹窗发音区的「语音」下拉列表是否为空（若为空说明系统缺少英语语音包，请参考第 5 节安装）。另外也可直接点击释义气泡内的喇叭按钮测试发音。</span><span class="i18n-en">Verify that "Speak on hover" is enabled and that the "Voice" dropdown is not empty. If empty, install English system voice packs as described in Section 5. You can also test with the speaker button in any bubble.</span></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：删除生词时提示失败是什么原因？</span><span class="i18n-en">Q: What causes word deletion to fail?</span></div>
+          <div class="faq-a"><span class="i18n-zh">通常是因为有道账号的登录会话已失效。点击页面顶部出现的红色横幅中的「重新登录」，登录完毕后重新尝试即可。</span><span class="i18n-en">This typically indicates an expired Youdao session. Click "Sign in again" on the red warning banner, then retry deletion after signing in.</span></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="i18n-zh">问：我的生词数据或浏览网页会被上传到第三方服务器吗？</span><span class="i18n-en">Q: Is my browsing history or wordbook uploaded to third-party servers?</span></div>
+          <div class="faq-a"><span class="i18n-zh">绝不会。扩展严格采用本地优先（Local-First）架构，生词仅从有道官方拉取并保存在你自己的浏览器本地，没有任何第三方服务器中转、无埋点、无远程上报。</span><span class="i18n-en">Absolutely not. The extension uses a strict local-first architecture; data is fetched directly from Youdao to your device with zero telemetry and no third-party servers.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 隐私与权限说明 -->
+    <section id="privacy">
+      <h2><span class="num">🔒</span><span class="i18n-zh">隐私保护与权限声明</span><span class="i18n-en">Privacy & Security</span></h2>
+      <ul>
+        <li><span class="i18n-zh"><b>本地优先运行：</b>生词本同步到浏览器本地存储后，所有页面高亮计算与释义匹配均在本地瞬间完成。</span><span class="i18n-en"><b>Local-First Execution:</b> Once synced, all word matching and highlighting runs completely within your local browser sandbox.</span></li>
+        <li><span class="i18n-zh"><b>不收集个人隐私：</b>扩展不收集、不解析、不上报你的任何浏览网页内容、搜索记录或个人身份信息。</span><span class="i18n-en"><b>Zero Data Collection:</b> The extension does not read, log or upload your page content, search history, or personal identifiers.</span></li>
+        <li><span class="i18n-zh"><b>权限最小化：</b>仅申请同步有道生词本、语音发音及本地持久化所需的必要权限。</span><span class="i18n-en"><b>Minimal Permissions:</b> Only permissions strictly necessary for dictionary sync, audio playback and local storage are requested.</span></li>
+        <li><span class="i18n-zh"><b>Cookie 仅用于登录判断：</b>扩展读取 youdao.com 的登录 Cookie 仅用于判断你当前是否有道在线，从而展示账号状态。Cookie 绝不会被提取、拼接或发送到任何第三方服务器。</span><span class="i18n-en"><b>Cookies Used Strictly for Sign-In Detection:</b> The extension checks youdao.com session cookies solely to determine if you are logged in; cookies are never extracted, saved, or transmitted elsewhere.</span></li>
+        <li><span class="i18n-zh"><b>第三方工具身份声明：</b>本扩展为独立开发者开发的效率工具，与网易有道官方无关；「有道」字样仅用于客观指明生词本数据的来源服务。</span><span class="i18n-en"><b>Independent Third-Party Status:</b> This is an independent open-source productivity utility not affiliated with NetEase Youdao; "Youdao" is used solely to identify the wordbook source.</span></li>
+      </ul>
+    </section>
+
+    <!-- 12. 联系作者 -->
+    <section id="contact" class="contact">
+      <h2><span class="num">📮</span><span class="i18n-zh">联系与反馈</span><span class="i18n-en">Contact & Feedback</span></h2>
+      <p><span class="i18n-zh">如果你在使用过程中遇到任何问题，或对新功能有改进建议，欢迎随时与作者取得联系：</span><span class="i18n-en">If you encounter any issues or have feature suggestions, feel free to reach out directly:</span></p>
+
+      <div class="contact-grid">
+        <!-- 邮箱卡片 -->
+        <div class="contact-card">
+          <div class="contact-card-head">
+            <div class="contact-icon-badge">✉️</div>
+            <div class="contact-head-text">
+              <div class="contact-title"><span class="i18n-zh">邮件反馈</span><span class="i18n-en">Email Support</span></div>
+              <div class="contact-subtitle"><span class="i18n-zh">问题反馈与功能建议</span><span class="i18n-en">Bug reports & feature requests</span></div>
+            </div>
+          </div>
+
+          <div class="contact-card-body">
+            <p class="contact-desc">
+              <span class="i18n-zh">在使用中遇到任何异常、特殊网页不适配或有新的功能想法，欢迎发送邮件直接与作者沟通：</span>
+              <span class="i18n-en">If you spot any bugs, page layout conflicts or have ideas for new features, feel free to send an email:</span>
+            </p>
+
+            <a href="mailto:wenjiajun.cn@gmail.com" class="contact-badge" title="点击发送邮件 / Click to send email">
+              <span class="contact-badge-left">
+                <span class="contact-badge-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </span>
+                <span class="contact-badge-val">wenjiajun.cn@gmail.com</span>
+              </span>
+              <span class="contact-badge-tag"><span class="i18n-zh">发邮件</span><span class="i18n-en">Send</span></span>
+            </a>
+
+            <div class="contact-tip">
+              <span class="tip-dot"></span>
+              <span class="i18n-zh">作者通常在 24 小时内回复邮件</span>
+              <span class="i18n-en">Usually replies within 24 hours</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 微信卡片 -->
+        <div class="contact-card">
+          <div class="contact-card-head">
+            <div class="contact-icon-badge">💬</div>
+            <div class="contact-head-text">
+              <div class="contact-title"><span class="i18n-zh">微信联系</span><span class="i18n-en">WeChat Contact</span></div>
+              <div class="contact-subtitle"><span class="i18n-zh">添加作者微信直接沟通</span><span class="i18n-en">Add author on WeChat directly</span></div>
+            </div>
+          </div>
+
+          <div class="contact-card-body">
+            <p class="contact-desc">
+              <span class="i18n-zh">欢迎添加作者个人微信交流，快速反馈问题、探讨功能构想或申请新版本体验：</span>
+              <span class="i18n-en">Feel free to connect directly on WeChat for quick feedback, discussion and feature requests:</span>
+            </p>
+
+            <div class="contact-badge" title="微信号：v587233">
+              <span class="contact-badge-left">
+                <span class="contact-badge-icon">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                </span>
+                <span class="contact-badge-val">v587233</span>
+              </span>
+              <span class="contact-badge-tag"><span class="i18n-zh">微信号</span><span class="i18n-en">WeChat ID</span></span>
+            </div>
+
+            <div class="contact-tip">
+              <span class="tip-dot"></span>
+              <span class="i18n-zh">添加时请备注「生词高亮」或「单词助手」</span>
+              <span class="i18n-en">Mention "Vocabulary Highlighter" when adding</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+      <div class="logo"><span class="i18n-zh">生词高亮助手</span><span class="i18n-en">Vocabulary Highlighter</span></div>
+      <div><span class="i18n-zh">让每一次阅读都成为背单词的机会 · v<span class="app-version">1.0.1</span></span><span class="i18n-en">Turn every page into a chance to review words · v<span class="app-version">1.0.1</span></span></div>
+    </footer>
+
+  </div>
+
+  <!-- 顺序不能变：文案常量 → i18n 运行时 → 页面逻辑 -->
+  <script src="../lib/i18n-messages.js"></script>
+  <script src="../lib/i18n.js"></script>
+  <script src="../lib/doc-i18n.js"></script>
+</body>
+</html>

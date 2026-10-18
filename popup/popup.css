@@ -1,0 +1,669 @@
+/* 有道生词高亮 - Popup 样式（参考"陪读蛙"简洁设计） */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f7f8fa;
+  color: #333;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 280px;
+  padding: 12px;
+}
+
+/* 头部 */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 头部标题（无图标） */
+.logo-text {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.version {
+  font-size: 11px;
+  color: #999;
+}
+
+/* 卡片 */
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+/* 同步图标按钮（账号条目右侧，与该条目垂直居中） */
+.icon-btn {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8f8ed;
+  color: #28a745;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.icon-btn:hover {
+  background: #d4edd9;
+}
+
+/* 登出按钮：默认中性灰，悬浮才转成危险色（不做成常驻红色，避免抢视觉） */
+.icon-btn--danger {
+  background: #f1f2f4;
+  color: #8a9099;
+}
+
+.icon-btn--danger:hover {
+  background: #ffe9e9;
+  color: #e05656;
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+.icon-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* 同步中：图标旋转 */
+.icon-btn.syncing svg {
+  animation: yh-spin 0.9s linear infinite;
+}
+
+@keyframes yh-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 悬浮 popover（深色圆角 + 白字，参考截图样式） */
+.icon-btn::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translate(-50%, 3px);
+  background: rgba(28, 28, 30, 0.96);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.2;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;          /* 双保险：默认绝不显示，只有 :hover 才出现 */
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  z-index: 20;
+}
+
+.icon-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.link-btn {
+  color: #28a745;
+  text-decoration: none;
+  font-size: 12px;
+  border: 1px solid #28a745;
+  padding: 3px 12px;
+  border-radius: 12px;
+  transition: all 0.15s;
+}
+
+.link-btn:hover {
+  background: #28a745;
+  color: white;
+}
+
+/* 账号状态行：登录/未登录共用同一套布局（头像 + 文案 + 右侧操作组） */
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 右侧操作组：同步 / 登出（或未登录时的登录按钮） */
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* 有道真实图标（远程 favicon）；加载失败时 popup.js 会替换为下面这个字母兜底 */
+.user-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #eef0f3;
+  background: #fff;
+  object-fit: contain;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* 未登录时的灰阶占位头像（与已登录头像同尺寸，只是弱化） */
+.user-avatar.guest {
+  background: #eef0f3;
+  color: #a8aeb6;
+  border: 1px solid #e6e8eb;
+  font-size: 15px;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;   /* 占满中间，把右侧操作组挤到最右 */
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.wordbook-count {
+  font-size: 12px;
+  color: #888;
+}
+
+
+.primary-btn {
+  width: 100%;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.primary-btn:hover {
+  background: #218838;
+}
+
+.primary-btn:disabled {
+  background: #a3d9a3;
+  cursor: not-allowed;
+}
+
+/* 行内紧凑版主按钮（未登录时的「登录」）：与图标按钮同高，不再占满整行 */
+.primary-btn.compact {
+  width: auto;
+  height: 26px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 13px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 功能开关：横向三列，开关在上、文字在下 */
+.feature-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.feature-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  cursor: pointer;
+}
+
+.feature-label {
+  font-size: 12px;
+  color: #333;
+  /* 英文标签更长（Speak on hover / Highlight words）：允许在空格处折行，
+     宽出来的部分不该顶破卡片（中文标签短，表现不变）。 */
+  text-align: center;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+/* 开关 */
+.switch {
+  appearance: none;
+  width: 38px;
+  height: 22px;
+  background: #ddd;
+  border-radius: 11px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.switch:checked {
+  background: #28a745;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.switch:checked::after {
+  transform: translateX(16px);
+}
+
+/* 发音：语音选择行 */
+.voice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-label {
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.voice-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 24px 0 9px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #333;
+  background-color: #f7f8fa;
+  border: 1px solid #e6e8eb;
+  border-radius: 7px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 7px center;
+  background-size: 12px 12px;
+}
+
+.voice-select:hover {
+  border-color: #d4edd9;
+  background-color: #f2f8f4;
+}
+
+.voice-select:focus {
+  outline: none;
+  border-color: #28a745;
+}
+
+.voice-select:disabled {
+  color: #aaa;
+  cursor: default;
+}
+
+/* 颜色预设：弹性等分正方形，7 个也能一行放下 */
+.color-presets {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.preset {
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.preset:hover {
+  transform: scale(1.1);
+}
+
+.preset.active {
+  border-color: #28a745;
+}
+
+/* 自定义颜色 */
+.custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;   /* 英文标签（Background）更长，一行放不下时换行而不是互相压 */
+}
+
+.custom-label {
+  font-size: 12px;
+  color: #666;
+  /* 中文「背景 / 文字」原先是写死的 28px；英文 Background 需要 68px，写死会被截断 */
+  min-width: 28px;
+  white-space: nowrap;
+}
+
+.color-picker {
+  width: 32px;
+  height: 28px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 2px;
+  background: white;
+}
+
+/* 底部 */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 2px;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.text-btn:hover {
+  background: #eee;
+  color: #666;
+}
+
+/* ===== 操作结果提示（替代 alert）=====
+   悬浮在弹窗顶部、盖在内容之上，不再挤在文档流最底部（那里会被 footer 顶到屏幕外、看不清）。
+   用 opacity/visibility 过渡而不是 display：这样浮入/淡出有动画，也不会占据布局高度。*/
+.toast-area {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 30;
+  max-width: calc(100% - 24px);
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(38, 42, 48, 0.97);
+  color: #f2f2f2;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -10px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events: none;
+}
+
+.toast-area.toast-show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* 远端失败但本地已生效（文案以 ⚠️ 开头） */
+.toast-area.toast-warn {
+  background: rgba(122, 47, 47, 0.97);
+  color: #ffe3e3;
+}
+
+/* ===== 确认框（替代 confirm）===== */
+.dialog-area {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.dialog-area[hidden] {
+  display: none;
+}
+
+.dialog-card {
+  width: 100%;
+  max-width: 250px;
+  padding: 14px;
+  background: #ffffff;
+  color: #333333;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dialog-text {
+  white-space: pre-line;   /* confirmLogout 文案里带换行 */
+  word-break: break-word;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.dialog-btn {
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1px solid #dcdcdc;
+  background: #f5f6f7;
+  color: #333333;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dialog-btn:hover {
+  background: #eceef0;
+}
+
+.dialog-btn-danger {
+  border-color: #dc3545;
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.dialog-btn-danger:hover {
+  background: #c62c3b;
+}
+
+/* ===== 深色模式 =====
+ * popup 的颜色是手写的常量（不是变量体系），这里集中覆盖主要表面。
+ * 注意：颜色预设色块（.preset）与开关高亮色属于品牌/功能色，不随主题变化。 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1c1c1e;
+    color: #e8e8e8;
+  }
+
+  .version,
+  .wordbook-count,
+  .voice-label,
+  .custom-label {
+    color: #9a9aa0;
+  }
+
+  .card {
+    background: #2c2c2e;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  .card-title,
+  .feature-label,
+  .user-name {
+    color: #e8e8e8;
+  }
+
+  /* 图标按钮 */
+  .icon-btn {
+    background: #3a3a3c;
+    color: #a0a0a5;
+  }
+  .icon-btn:hover {
+    background: #48484a;
+    color: #e8e8e8;
+  }
+  .icon-btn--danger {
+    background: #3a3a3c;
+    color: #a0a0a5;
+  }
+  .icon-btn--danger:hover {
+    background: #4a2f2f;
+    color: #ff7b7b;
+  }
+
+  /* 头像 */
+  .user-avatar-img {
+    background: #3a3a3c;
+    border-color: #48484a;
+  }
+  .user-avatar.guest {
+    background: #3a3a3c;
+    border-color: #48484a;
+    color: #8e8e93;
+  }
+
+  /* 开关 */
+  .switch {
+    background: #48484a;
+  }
+  .switch::after {
+    background: #e8e8e8;
+  }
+
+  /* 表单控件 */
+  .voice-select {
+    background-color: #3a3a3c;
+    border-color: #48484a;
+    color: #e8e8e8;
+  }
+  .voice-select:disabled {
+    color: #8e8e93;
+  }
+  .color-picker {
+    background: #3a3a3c;
+    border-color: #48484a;
+  }
+
+  /* 颜色预设的描边在深色下要更亮一点才看得出边界 */
+  .preset {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  }
+
+  /* 底部按钮 */
+  .text-btn {
+    color: #9a9aa0;
+  }
+  .text-btn:hover {
+    background: #3a3a3c;
+    color: #e8e8e8;
+  }
+}
+
+/* toast / 确认框的深色适配 */
+@media (prefers-color-scheme: dark) {
+  .dialog-card {
+    background: #2c2c2e;
+    color: #e8e8e8;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .dialog-btn {
+    background: #3a3a3c;
+    color: #e8e8e8;
+    border-color: #48484a;
+  }
+
+  .dialog-btn:hover {
+    background: #48484a;
+  }
+
+  .dialog-btn-danger {
+    border-color: #e05656;
+    background: #c62c3b;
+    color: #ffffff;
+  }
+
+  .dialog-btn-danger:hover {
+    background: #b02534;
+  }
+}

@@ -1,0 +1,22 @@
+# 依赖与构建产物
+node_modules/
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# AI
+.workbuddy
+
+# 本地敏感配置（如有）
+.env
+*.local
+
+# 本地预览（非插件运行时文件）
+preview/
+
+# 构建产物（dist/ 由 build-store.sh 生成，不入库）
+dist/
+.output/
+.wxt/

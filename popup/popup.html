@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-yhi18n-page>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 文案在运行时替换：浏览器只替换 manifest.json 里的占位符，HTML 里写了会原样显示。
+       这里直接写默认（中文）文案 + data-i18n，脚本没跑起来也不会露出占位符。 -->
+  <title data-i18n="popupTitle">生词高亮</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- 头部 -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-text" data-i18n="popupTitle">生词高亮</span>
+      </div>
+      <span class="version">v1.0.1</span>
+    </header>
+
+    <!-- 账号状态：两种状态共用同一行布局（头像 + 文案 + 右侧操作），按钮随登录态切换 -->
+    <section class="card">
+      <div class="card-title" data-i18n="cardDict">词典</div>
+
+      <!-- 未登录：灰阶占位头像 + 提示 + 「登录」 -->
+      <div id="loginArea" class="account-row" style="display:none">
+        <span class="user-avatar guest" aria-hidden="true">Y</span>
+        <div class="user-meta">
+          <span class="user-name" data-i18n="notLoggedIn">未登录</span>
+          <span class="wordbook-count" data-i18n="loginHint">登录后可同步生词本</span>
+        </div>
+        <div class="row-actions">
+          <a href="https://www.youdao.com/" target="_blank"
+             class="primary-btn compact" id="loginBtn" data-i18n="btnLogin">登录</a>
+        </div>
+      </div>
+
+      <!-- 已登录：有道词典条目 + 「同步」/「登出」 -->
+      <div id="accountArea" class="account-row" style="display:none">
+        <!-- 头像：有道官方 favicon（本地副本，避免远程外链） -->
+        <img class="user-avatar-img" id="userAvatar" alt="有道词典"
+             src="../images/icons/youdao-favicon.png">
+        <div class="user-meta">
+          <span class="user-name" id="userName">有道词典</span>
+          <span class="wordbook-count" id="wordbookCount">生词本：0 个</span>
+        </div>
+        <div class="row-actions">
+          <!-- 同步：图标按钮，悬浮显示「同步」popover -->
+          <button id="syncBtn" class="icon-btn" data-tip="同步生词本" data-i18n-tip="syncLabel"
+                  aria-label="同步生词本" data-i18n-aria="syncLabel" title="">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+          <!-- 登出：图标按钮，悬浮显示「登出」popover -->
+          <button id="logoutBtn" class="icon-btn icon-btn--danger" data-tip="登出账号"
+                  data-i18n-tip="ariaLogout" aria-label="登出账号" data-i18n-aria="ariaLogout" title="">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 功能开关：开关在上、文字在下，横向三列 -->
+    <section class="card">
+      <div class="card-title" data-i18n="cardFeature">功能</div>
+      <div class="feature-grid">
+        <label class="feature-item">
+          <input type="checkbox" id="toggle" class="switch">
+          <span class="feature-label" data-i18n="toggleLabel">生词高亮</span>
+        </label>
+        <label class="feature-item">
+          <input type="checkbox" id="ttsToggle" class="switch">
+          <span class="feature-label" data-i18n="toggleTts">悬浮发音</span>
+        </label>
+        <label class="feature-item">
+          <input type="checkbox" id="autoSync" class="switch">
+          <span class="feature-label" data-i18n="toggleAutoSync">自动同步</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- 发音：选择朗读语音 + 试听 -->
+    <section class="card">
+      <div class="card-title" data-i18n="cardTts">发音</div>
+      <div class="voice-row">
+        <label class="voice-label" for="voiceSelect" data-i18n="labelVoice">语音</label>
+        <select id="voiceSelect" class="voice-select">
+          <option value="" data-i18n="voiceAuto">自动（推荐）</option>
+        </select>
+        <button id="previewBtn" class="icon-btn" data-tip="试听发音" data-i18n-tip="ariaPreview"
+                aria-label="试听发音" data-i18n-aria="ariaPreview" title="">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- 高亮 -->
+    <section class="card">
+      <div class="card-title" data-i18n="cardHighlight">高亮</div>
+      <div class="color-presets">
+        <button class="preset" data-bg="#ffe464" data-text="" style="background:#ffe464" title="黄" data-i18n-title="presetYellow"></button>
+        <button class="preset" data-bg="#9be4a4" data-text="" style="background:#9be4a4" title="绿" data-i18n-title="presetGreen"></button>
+        <button class="preset" data-bg="#f69ba4" data-text="" style="background:#f69ba4" title="粉" data-i18n-title="presetPink"></button>
+        <button class="preset" data-bg="#80b6f6" data-text="" style="background:#80b6f6" title="蓝" data-i18n-title="presetBlue"></button>
+        <button class="preset" data-bg="#ffbe72" data-text="" style="background:#ffbe72" title="橙" data-i18n-title="presetOrange"></button>
+        <button class="preset" data-bg="#c2a3f7" data-text="" style="background:#c2a3f7" title="紫" data-i18n-title="presetPurple"></button>
+        <button class="preset" data-bg="#969aa0" data-text="" style="background:#969aa0" title="灰" data-i18n-title="presetGray"></button>
+      </div>
+      <div class="custom-row">
+        <span class="custom-label" data-i18n="labelBg">背景</span>
+        <input type="color" id="highlightBg" class="color-picker" value="#ffe464">
+        <span class="custom-label" data-i18n="labelText">文字</span>
+        <input type="color" id="highlightText" class="color-picker" value="#000000">
+      </div>
+    </section>
+
+    <!-- 界面语言：跟随浏览器 / 中文 / English -->
+    <section class="card">
+      <div class="card-title" data-i18n="cardLanguage">界面语言</div>
+      <div class="voice-row">
+        <select id="langSelect" class="voice-select" aria-label="界面语言" data-i18n-aria="cardLanguage">
+          <option value="auto" data-i18n="langAuto">跟随浏览器</option>
+          <option value="zh_CN">中文</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <button id="resetBtn" class="text-btn" data-i18n="btnReset">恢复默认</button>
+      <button id="helpBtn" class="text-btn" type="button" data-i18n="btnHelp">说明</button>
+    </footer>
+
+    <!-- 操作结果提示（替代 alert）：不阻塞、自动消失 -->
+    <div id="toastArea" class="toast-area" role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- 确认框容器（替代 confirm）：由 popup.js 填充 -->
+  <div id="dialogArea" class="dialog-area" hidden></div>
+
+  <!-- 顺序不能变：文案常量 → i18n 运行时 → 页面逻辑 -->
+  <script src="../lib/i18n-messages.js"></script>
+  <script src="../lib/i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

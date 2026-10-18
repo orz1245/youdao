@@ -1,0 +1,290 @@
+{
+  "appName": {
+    "message": "生词高亮助手",
+    "description": "单词高亮助手"
+  },
+  "appDesc": {
+    "message": "在任意网页高亮生词并显示音标释义与发音，支持同步有道词典生词本、选中文字一键添加。第三方工具，与有道官方无关。",
+    "description": "插件描述"
+  },
+  "popupTitle": {
+    "message": "生词高亮",
+    "description": "弹窗标题"
+  },
+  "cardDict": {
+    "message": "词典",
+    "description": "卡片标题：账号/同步"
+  },
+  "notLoggedIn": {
+    "message": "未登录",
+    "description": "未登录状态"
+  },
+  "loginHint": {
+    "message": "登录后可同步生词本",
+    "description": "未登录提示"
+  },
+  "btnLogin": {
+    "message": "登录",
+    "description": "登录按钮"
+  },
+  "defaultAccountName": {
+    "message": "有道词典",
+    "description": "已登录时展示的账号名"
+  },
+  "syncLabel": {
+    "message": "同步生词本",
+    "description": "同步按钮的悬浮提示与无障碍标签"
+  },
+  "ariaLogout": {
+    "message": "登出账号",
+    "description": "登出按钮的无障碍标签"
+  },
+  "cardFeature": {
+    "message": "功能",
+    "description": "卡片标题：功能开关"
+  },
+  "toggleLabel": {
+    "message": "生词高亮",
+    "description": "开关标签：生词高亮"
+  },
+  "toggleTts": {
+    "message": "悬浮发音",
+    "description": "开关标签：悬浮发音"
+  },
+  "toggleAutoSync": {
+    "message": "自动同步",
+    "description": "开关标签：自动同步"
+  },
+  "cardTts": {
+    "message": "发音",
+    "description": "卡片标题：发音"
+  },
+  "labelVoice": {
+    "message": "语音",
+    "description": "语音选择标签"
+  },
+  "voiceAuto": {
+    "message": "自动（推荐）",
+    "description": "语音下拉的默认项"
+  },
+  "ariaPreview": {
+    "message": "试听发音",
+    "description": "试听按钮的无障碍标签"
+  },
+  "cardHighlight": {
+    "message": "高亮",
+    "description": "卡片标题：高亮配色"
+  },
+  "presetYellow": {
+    "message": "黄",
+    "description": "高亮预设：黄色"
+  },
+  "presetGreen": {
+    "message": "绿",
+    "description": "高亮预设：绿色"
+  },
+  "presetPink": {
+    "message": "粉",
+    "description": "高亮预设：粉色"
+  },
+  "presetBlue": {
+    "message": "蓝",
+    "description": "高亮预设：蓝色"
+  },
+  "presetOrange": {
+    "message": "橙",
+    "description": "高亮预设：橙色"
+  },
+  "presetPurple": {
+    "message": "紫",
+    "description": "高亮预设：紫色"
+  },
+  "presetGray": {
+    "message": "灰",
+    "description": "高亮预设：灰色"
+  },
+  "labelBg": {
+    "message": "背景",
+    "description": "自定义高亮背景色标签"
+  },
+  "labelText": {
+    "message": "文字",
+    "description": "自定义高亮文字色标签"
+  },
+  "btnReset": {
+    "message": "恢复默认",
+    "description": "恢复默认设置按钮"
+  },
+  "btnHelp": {
+    "message": "说明",
+    "description": "使用说明按钮"
+  },
+  "wordbookCount": {
+    "message": "生词本：$1 个",
+    "description": "已登录时展示的生词本条目数"
+  },
+  "confirmLogout": {
+    "message": "确认登出有道词典？\n\n· 登出后需要重新登录才能同步生词本\n· 已同步到本地的生词会保留，网页高亮继续生效",
+    "description": "登出确认弹窗"
+  },
+  "noEnglishVoiceTitle": {
+    "message": "未检测到英语语音，发音不可用；请在系统设置中安装英语语音",
+    "description": "没有任何可用英语语音时的提示"
+  },
+  "bubbleLoading": {
+    "message": "查询中…",
+    "description": "气泡加载文案"
+  },
+  "noMeaning": {
+    "message": "（暂无释义）",
+    "description": "查不到释义时的占位"
+  },
+  "ariaSpeak": {
+    "message": "发音",
+    "description": "气泡发音按钮的无障碍标签"
+  },
+  "ariaDelete": {
+    "message": "删除",
+    "description": "气泡删除按钮的无障碍标签"
+  },
+  "loginExpiredBanner": {
+    "message": "有道登录已失效，请重新登录以同步生词本",
+    "description": "登录失效横幅（无原因）"
+  },
+  "loginExpiredBannerReason": {
+    "message": "有道登录已失效（$1），请重新登录以同步生词本",
+    "description": "登录失效横幅（带原因）"
+  },
+  "btnReLogin": {
+    "message": "重新登录",
+    "description": "横幅上的重新登录按钮"
+  },
+  "ariaClose": {
+    "message": "关闭",
+    "description": "横幅关闭按钮的无障碍标签"
+  },
+  "addToWordbook": {
+    "message": "添加「$1」到有道生词本",
+    "description": "选中文字后的添加菜单"
+  },
+  "confirmDelete": {
+    "message": "确认删除「$1」？",
+    "description": "删除生词的确认弹窗"
+  },
+  "addedFallback": {
+    "message": "$1 已添加",
+    "description": "添加成功但没有收到后台文案时的兜底"
+  },
+  "syncOk": {
+    "message": "同步成功，共 $1 个生词",
+    "description": "同步成功"
+  },
+  "syncOkDupes": {
+    "message": "同步成功：导入 $1 条，其中 $2 条与现有生词重复，实际共 $3 个不重复单词",
+    "description": "同步成功但存在重复条目"
+  },
+  "syncLoginExpired": {
+    "message": "⚠️ 登录已失效，请重新登录有道词典后再次同步",
+    "description": "同步时发现登录失效"
+  },
+  "syncFailAll": {
+    "message": "同步失败：三种方式均未获取到生词。请确认：①已在浏览器登录有道词典；②生词本不为空。可在扩展 Service Worker 控制台执行 __yhDebug.enable() 查看详细日志",
+    "description": "三种策略全部失败"
+  },
+  "syncFailNetwork": {
+    "message": "网络错误，请检查网络后重试",
+    "description": "同步网络异常"
+  },
+  "syncFailUnexpected": {
+    "message": "同步失败：发生未预期的错误，请重试",
+    "description": "同步未预期异常"
+  },
+  "deleteOk": {
+    "message": "「$1」已从有道生词本删除",
+    "description": "删除成功"
+  },
+  "deleteFailNoWord": {
+    "message": "删除失败：缺少单词",
+    "description": "删除时未传单词"
+  },
+  "deleteNeedLogin": {
+    "message": "⚠️ 有道端未删除（$1），已从本地移除，请重新登录有道词典",
+    "description": "删除时登录失效"
+  },
+  "deleteFailed": {
+    "message": "⚠️ 有道端删除失败（$1），已从本地移除；下次同步可能重新出现",
+    "description": "删除失败但本地已移除"
+  },
+  "addOk": {
+    "message": "「$1」已添加到有道生词本",
+    "description": "添加成功"
+  },
+  "addAlreadyExists": {
+    "message": "「$1」已在生词本中",
+    "description": "重复添加"
+  },
+  "addFailNoWord": {
+    "message": "添加失败：单词为空",
+    "description": "添加时未传单词"
+  },
+  "addNeedLogin": {
+    "message": "⚠️ 「$1」仅添加到本地（$2），请重新登录有道词典",
+    "description": "添加时登录失效"
+  },
+  "addFailed": {
+    "message": "⚠️ 有道端添加失败（$1），已仅添加到本地",
+    "description": "添加失败但本地已写入"
+  },
+  "logoutDone": {
+    "message": "已登出有道词典",
+    "description": "登出成功"
+  },
+  "confirmReset": {
+    "message": "确认恢复默认设置？",
+    "description": "恢复默认设置的确认弹窗"
+  },
+  "ariaAdd": {
+    "message": "加入生词本",
+    "description": "气泡「加入生词本」按钮的无障碍标签"
+  },
+  "deleteRequestFailed": {
+    "message": "⚠️ 删除请求失败：$1",
+    "description": "删除请求抛异常（网络层）"
+  },
+  "reasonNetworkError": {
+    "message": "网络错误（$1）",
+    "description": "接口异常原因，会拼进用户可见提示"
+  },
+  "reasonNotJson": {
+    "message": "返回非 JSON（登录可能已过期，被重定向到登录页）",
+    "description": "接口返回非 JSON 的原因，会拼进用户可见提示"
+  },
+  "reasonSyncLoginExpired": {
+    "message": "同步时发现登录已失效",
+    "description": "同步时登录失效，会显示在横幅括号里"
+  },
+  "btnConfirm": {
+    "message": "确认",
+    "description": "页面内确认框的确认按钮"
+  },
+  "btnCancel": {
+    "message": "取消",
+    "description": "页面内确认框的取消按钮"
+  },
+  "cardLanguage": {
+    "message": "界面语言",
+    "description": "弹窗卡片标题：界面语言选择"
+  },
+  "langAuto": {
+    "message": "跟随浏览器",
+    "description": "界面语言下拉框：跟随浏览器语言"
+  },
+  "tutorialTitle": {
+    "message": "生词高亮助手 · 使用说明",
+    "description": "内置说明页的标题"
+  },
+  "opFailed": {
+    "message": "⚠️ 操作失败：$1",
+    "description": "消息处理抛异常时的兜底提示"
+  }
+}

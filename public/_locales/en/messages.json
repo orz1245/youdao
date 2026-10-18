@@ -1,0 +1,290 @@
+{
+  "appName": {
+    "message": "Vocabulary Highlighter",
+    "description": "单词高亮助手"
+  },
+  "appDesc": {
+    "message": "Highlight your vocabulary words on any web page with phonetics, definitions and pronunciation. Syncs with your Youdao wordbook; select any text to add a word. Third-party tool, not affiliated with Youdao.",
+    "description": "插件描述"
+  },
+  "popupTitle": {
+    "message": "Vocabulary Highlighter",
+    "description": "弹窗标题"
+  },
+  "cardDict": {
+    "message": "Dictionary",
+    "description": "卡片标题：账号/同步"
+  },
+  "notLoggedIn": {
+    "message": "Not signed in",
+    "description": "未登录状态"
+  },
+  "loginHint": {
+    "message": "Sign in to sync your wordbook",
+    "description": "未登录提示"
+  },
+  "btnLogin": {
+    "message": "Sign in",
+    "description": "登录按钮"
+  },
+  "defaultAccountName": {
+    "message": "Youdao Dictionary",
+    "description": "已登录时展示的账号名"
+  },
+  "syncLabel": {
+    "message": "Sync wordbook",
+    "description": "同步按钮的悬浮提示与无障碍标签"
+  },
+  "ariaLogout": {
+    "message": "Sign out",
+    "description": "登出按钮的无障碍标签"
+  },
+  "cardFeature": {
+    "message": "Features",
+    "description": "卡片标题：功能开关"
+  },
+  "toggleLabel": {
+    "message": "Highlight words",
+    "description": "开关标签：生词高亮"
+  },
+  "toggleTts": {
+    "message": "Speak on hover",
+    "description": "开关标签：悬浮发音"
+  },
+  "toggleAutoSync": {
+    "message": "Auto sync",
+    "description": "开关标签：自动同步"
+  },
+  "cardTts": {
+    "message": "Speech",
+    "description": "卡片标题：发音"
+  },
+  "labelVoice": {
+    "message": "Voice",
+    "description": "语音选择标签"
+  },
+  "voiceAuto": {
+    "message": "Auto (recommended)",
+    "description": "语音下拉的默认项"
+  },
+  "ariaPreview": {
+    "message": "Preview pronunciation",
+    "description": "试听按钮的无障碍标签"
+  },
+  "cardHighlight": {
+    "message": "Highlight",
+    "description": "卡片标题：高亮配色"
+  },
+  "presetYellow": {
+    "message": "Yellow",
+    "description": "高亮预设：黄色"
+  },
+  "presetGreen": {
+    "message": "Green",
+    "description": "高亮预设：绿色"
+  },
+  "presetPink": {
+    "message": "Pink",
+    "description": "高亮预设：粉色"
+  },
+  "presetBlue": {
+    "message": "Blue",
+    "description": "高亮预设：蓝色"
+  },
+  "presetOrange": {
+    "message": "Orange",
+    "description": "高亮预设：橙色"
+  },
+  "presetPurple": {
+    "message": "Purple",
+    "description": "高亮预设：紫色"
+  },
+  "presetGray": {
+    "message": "Gray",
+    "description": "高亮预设：灰色"
+  },
+  "labelBg": {
+    "message": "Background",
+    "description": "自定义高亮背景色标签"
+  },
+  "labelText": {
+    "message": "Text",
+    "description": "自定义高亮文字色标签"
+  },
+  "btnReset": {
+    "message": "Reset",
+    "description": "恢复默认设置按钮"
+  },
+  "btnHelp": {
+    "message": "Help",
+    "description": "使用说明按钮"
+  },
+  "wordbookCount": {
+    "message": "Wordbook: $1 words",
+    "description": "已登录时展示的生词本条目数"
+  },
+  "confirmLogout": {
+    "message": "Sign out of Youdao?\n\n· You will need to sign in again to sync your wordbook\n· Words already synced stay on this device and highlighting keeps working",
+    "description": "登出确认弹窗"
+  },
+  "noEnglishVoiceTitle": {
+    "message": "No English voice found; speech is unavailable. Install one in your system settings",
+    "description": "没有任何可用英语语音时的提示"
+  },
+  "bubbleLoading": {
+    "message": "Looking up…",
+    "description": "气泡加载文案"
+  },
+  "noMeaning": {
+    "message": "(no definition)",
+    "description": "查不到释义时的占位"
+  },
+  "ariaSpeak": {
+    "message": "Pronounce",
+    "description": "气泡发音按钮的无障碍标签"
+  },
+  "ariaDelete": {
+    "message": "Delete",
+    "description": "气泡删除按钮的无障碍标签"
+  },
+  "loginExpiredBanner": {
+    "message": "Your Youdao session has expired. Sign in again to sync your wordbook.",
+    "description": "登录失效横幅（无原因）"
+  },
+  "loginExpiredBannerReason": {
+    "message": "Your Youdao session has expired ($1). Sign in again to sync your wordbook.",
+    "description": "登录失效横幅（带原因）"
+  },
+  "btnReLogin": {
+    "message": "Sign in again",
+    "description": "横幅上的重新登录按钮"
+  },
+  "ariaClose": {
+    "message": "Close",
+    "description": "横幅关闭按钮的无障碍标签"
+  },
+  "addToWordbook": {
+    "message": "Add “$1” to your wordbook",
+    "description": "选中文字后的添加菜单"
+  },
+  "confirmDelete": {
+    "message": "Delete “$1”?",
+    "description": "删除生词的确认弹窗"
+  },
+  "addedFallback": {
+    "message": "$1 added",
+    "description": "添加成功但没有收到后台文案时的兜底"
+  },
+  "syncOk": {
+    "message": "Synced: $1 words",
+    "description": "同步成功"
+  },
+  "syncOkDupes": {
+    "message": "Synced: imported $1 entries ($2 duplicates), $3 unique words in total",
+    "description": "同步成功但存在重复条目"
+  },
+  "syncLoginExpired": {
+    "message": "⚠️ Session expired. Sign in to Youdao again and retry the sync.",
+    "description": "同步时发现登录失效"
+  },
+  "syncFailAll": {
+    "message": "Sync failed: none of the three strategies returned any words. Check that (1) you are signed in to Youdao in this browser and (2) your wordbook is not empty. Run __yhDebug.enable() in the extension service worker console for detailed logs.",
+    "description": "三种策略全部失败"
+  },
+  "syncFailNetwork": {
+    "message": "Network error. Check your connection and try again.",
+    "description": "同步网络异常"
+  },
+  "syncFailUnexpected": {
+    "message": "Sync failed with an unexpected error. Please try again.",
+    "description": "同步未预期异常"
+  },
+  "deleteOk": {
+    "message": "Removed “$1” from your wordbook",
+    "description": "删除成功"
+  },
+  "deleteFailNoWord": {
+    "message": "Delete failed: no word given",
+    "description": "删除时未传单词"
+  },
+  "deleteNeedLogin": {
+    "message": "⚠️ Not removed on Youdao ($1), but removed locally. Sign in to Youdao again.",
+    "description": "删除时登录失效"
+  },
+  "deleteFailed": {
+    "message": "⚠️ Youdao rejected the delete ($1). Removed locally; it may come back after the next sync.",
+    "description": "删除失败但本地已移除"
+  },
+  "addOk": {
+    "message": "Added “$1” to your wordbook",
+    "description": "添加成功"
+  },
+  "addAlreadyExists": {
+    "message": "“$1” is already in your wordbook",
+    "description": "重复添加"
+  },
+  "addFailNoWord": {
+    "message": "Add failed: empty word",
+    "description": "添加时未传单词"
+  },
+  "addNeedLogin": {
+    "message": "⚠️ “$1” was added locally only ($2). Sign in to Youdao again.",
+    "description": "添加时登录失效"
+  },
+  "addFailed": {
+    "message": "⚠️ Youdao rejected the add ($1). Added locally only.",
+    "description": "添加失败但本地已写入"
+  },
+  "logoutDone": {
+    "message": "Signed out of Youdao",
+    "description": "登出成功"
+  },
+  "confirmReset": {
+    "message": "Reset all settings to default?",
+    "description": "Reset confirmation"
+  },
+  "ariaAdd": {
+    "message": "Add to wordbook",
+    "description": "气泡「加入生词本」按钮的无障碍标签"
+  },
+  "deleteRequestFailed": {
+    "message": "⚠️ Delete request failed: $1",
+    "description": "删除请求抛异常（网络层）"
+  },
+  "reasonNetworkError": {
+    "message": "Network error ($1)",
+    "description": "接口异常原因，会拼进用户可见提示"
+  },
+  "reasonNotJson": {
+    "message": "Response was not JSON (the session may have expired and been redirected to the sign-in page)",
+    "description": "接口返回非 JSON 的原因，会拼进用户可见提示"
+  },
+  "reasonSyncLoginExpired": {
+    "message": "Session expired while syncing",
+    "description": "同步时登录失效，会显示在横幅括号里"
+  },
+  "btnConfirm": {
+    "message": "Confirm",
+    "description": "页面内确认框的确认按钮"
+  },
+  "btnCancel": {
+    "message": "Cancel",
+    "description": "页面内确认框的取消按钮"
+  },
+  "cardLanguage": {
+    "message": "Language",
+    "description": "弹窗卡片标题：界面语言选择"
+  },
+  "langAuto": {
+    "message": "Browser default",
+    "description": "界面语言下拉框：跟随浏览器语言"
+  },
+  "tutorialTitle": {
+    "message": "Vocabulary Highlighter · Guide",
+    "description": "内置说明页的标题"
+  },
+  "opFailed": {
+    "message": "⚠️ Operation failed: $1",
+    "description": "消息处理抛异常时的兜底提示"
+  }
+}

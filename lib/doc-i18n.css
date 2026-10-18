@@ -1,0 +1,60 @@
+/* 说明页 / 隐私页的双语文案与语言开关（逻辑见 lib/doc-i18n.js） */
+
+/* 默认显示中文那一份；<html data-lang="en"> 时反过来。
+   选择器带上 html[data-lang] 前缀，是为了压过页面自己的类选择器
+   （例如 .feat .feat-copy）—— 否则被隐藏的英文会被页面的 display 规则重新显示出来。
+   display: revert 让 span / div / li 各自回到标签本身的默认 display，
+   成对的块级内容也不会被压成 inline。 */
+html[data-lang] .i18n-en { display: none; }
+html[data-lang="en"] .i18n-zh { display: none; }
+html[data-lang="en"] .i18n-en { display: revert; }
+
+/* 页头语言开关（放在 .hero 里，随主题色反白） */
+.doc-lang {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, .25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+  z-index: 10;
+}
+
+.doc-lang button {
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: .85;
+  transition: all .2s ease;
+}
+
+.doc-lang button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, .15);
+}
+
+.doc-lang button[aria-pressed="true"] {
+  background: #fff;
+  color: #78350f;
+  font-weight: 600;
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+}
+
+@media (max-width: 640px) {
+  .doc-lang { top: 12px; right: 12px; padding: 3px; }
+  .doc-lang button { padding: 5px 10px; font-size: 12px; }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "youdao-vocab-highlighter",
+  "version": "1.0.1",
+  "private": true,
+  "description": "生词高亮助手",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "compile": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "vue": "^3.5.29"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.5",
+    "@wxt-dev/module-vue": "^1.0.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.1.5",
+    "vitest": "^5.0.5",
+    "vue-tsc": "^3.2.5",
+    "wxt": "^0.21.4"
+  }
+}

@@ -1,0 +1,515 @@
+/* 生词高亮助手 - Content Styles
+ *
+ * 单一来源：所有结构样式都在这里；动态颜色只走 --yh-* 变量，
+ * 由 content/content.js 的 applyStyles() 写到 <html> 的行内样式上。
+ * 这样改配色只改一处，不会再出现「content.css / content.js / service-worker.js
+ * 三份 CSS 各写一遍、透明度不一致」的漂移（历史上踩过这个坑）。
+ *
+ * 变量默认值 = 用户没设置任何配色偏好时的外观。
+ */
+:root {
+  --yh-hl-bg: rgba(255, 228, 100, 0.55);
+  --yh-hl-bg-hover: rgba(255, 228, 100, 0.78);
+  --yh-hl-fg: inherit;
+  --yh-bubble-bg: #ffffff;
+  --yh-bubble-fg: #444444;
+
+  /* 图标按钮（喇叭 / 加入 / 删除）的交互态底色：统一用「底色加深」表达，
+   * 不换图标色、不加圆点，只把按钮背后的底色压深一档。
+   * 用半透明黑叠加而非写死灰值：叠在气泡底色之上，跟随 --yh-bubble-bg，
+   * 用户自定义过气泡底色时也自然协调，不必逐主题写死。
+   * 白底实测：6% 黑 ≈ #f0f0f0（悬浮）、12% 黑 ≈ #e0e0e0（按下）。
+   * 深色主题另给一档（深底上小幅度看不出来），见文件末深色模式段。 */
+  --yh-btn-hover-bg: rgba(0, 0, 0, 0.06);
+  --yh-btn-active-bg: rgba(0, 0, 0, 0.12);
+  --yh-btn-focus-ring: rgba(0, 0, 0, 0.25);
+}
+
+/* ===== 高亮词 ===== */
+.yh-highlight {
+  background-color: var(--yh-hl-bg);
+  color: var(--yh-hl-fg);
+  border-radius: 2px;
+  padding: 0 1px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.yh-highlight:hover {
+  background-color: var(--yh-hl-bg-hover);
+}
+
+/* 已删除的高亮 */
+.yh-highlight-deleted {
+  background: transparent !important;
+  cursor: default;
+}
+
+/* ===== 释义气泡 ===== */
+.yh-bubble {
+  background: var(--yh-bubble-bg);
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
+  padding: 12px;
+  position: fixed;
+  z-index: 2147483647;
+  width: 280px !important;
+  max-width: 280px !important;
+  min-width: 280px !important;
+  box-sizing: border-box !important;
+  display: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  pointer-events: auto;
+  cursor: default;
+  overflow: hidden;
+  color: var(--yh-bubble-fg);
+}
+
+/* 用户在设置里指定了气泡文字色 → 整块统一（含子元素） */
+.yh-bubble.yh-bubble-fg-custom,
+.yh-bubble.yh-bubble-fg-custom * {
+  color: var(--yh-bubble-fg) !important;
+}
+
+/* 窄窗口自适应，避免气泡溢出屏幕 */
+@media (max-width: 280px) {
+  .yh-bubble {
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    min-width: 160px !important;
+  }
+}
+
+/* 高 DPI 屏幕确保边框和阴影清晰 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .yh-bubble {
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+    border-width: 0.5px;
+  }
+}
+
+.yh-bubble-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* 单词 + 喇叭：同一行内垂直居中。
+   历史坑：这层 div 原先没有样式，是普通块级行盒，里面的喇叭按钮按 baseline 对齐
+   （只含块级子元素的按钮，基线=盒子底边），会把整行撑高，单词被压到行底，
+   音标与删除按钮却按 align-items:center 居中 → 一行元素看起来全都没对齐。 */
+.yh-bubble-head-word {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.yh-bubble-word-text {
+  font-weight: 600;
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.yh-bubble-phonetic {
+  font-weight: 400;
+  font-size: 12px;
+  color: #999999;
+}
+
+.yh-bubble-action {
+  margin-left: auto;
+}
+
+.yh-bubble-trans {
+  color: #444444;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.yh-bubble-loading {
+  color: #999999;
+}
+
+.yh-pos-line {
+  display: flex;
+  gap: 3px;
+  align-items: flex-start;
+}
+
+.yh-pos-tag {
+  flex: 0 0 auto;
+  color: #28a745;
+  font-style: italic;
+  font-size: 12px;
+  padding-top: 1px;
+  min-width: 20px;
+  text-align: right;
+}
+
+.yh-pos-text {
+  flex: 1 1 auto;
+}
+
+/* ===== 图标按钮（喇叭 / 加入 / 删除）=====
+ * 交互反馈统一用「底色加深」表达：悬浮 6% 黑、按下 12% 黑（深色主题见文件末深色段）。
+ * 只动 background-color —— 尺寸 / 圆角 / 图标 / 文字样式一律不碰，
+ * 划过或按下时不会位移、缩放、抖动（不写 transition: all，避免把边框等一起动画）。
+ *
+ * 过渡分出入两段（有意为之）：
+ *   移入（:hover 里的 transition）0.15s —— 响应跟手；
+ *   移出（回落到本条的 transition）0.24s —— 稍慢淡回，鼠标快速扫过一排按钮时不会闪。 */
+.yh-bubble-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  color: #999999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: background-color 0.24s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* 悬浮：底色加深一档，0.15s 快速起效 */
+.yh-bubble-btn:hover {
+  background-color: var(--yh-btn-hover-bg);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 按下：再深一档，过渡压到 0.08s，点击反馈即时 */
+.yh-bubble-btn:active {
+  background-color: var(--yh-btn-active-bg);
+  transition: background-color 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 键盘聚焦：内收 2px 描边环（outline 不占布局，尺寸/形状不变）；鼠标点击不触发 focus-visible */
+.yh-bubble-btn:focus-visible {
+  background-color: var(--yh-btn-hover-bg);
+  outline: 2px solid var(--yh-btn-focus-ring);
+  outline-offset: -2px;
+}
+
+.yh-bubble-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* 动作按钮（加入/删除）：不单独配色，沿用 .yh-bubble-btn 的中性灰；
+   状态改用图标形状区分（圆圈加号 / 垃圾桶），避免按钮颜色跳色。
+   类名 .primary / .danger 仍由 content.js 保留，作为状态语义钩子。 */
+
+/* 喇叭按钮：与单词的水平间距由 .yh-bubble-head-word 的 gap 控制（保持贴紧），
+ * 自身尺寸 / 圆形 / 悬浮按下反馈都走 .yh-bubble-btn 的统一规则，这里只保证默认态无底色。 */
+.yh-bubble-speak {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  flex-shrink: 0;
+}
+
+.yh-bubble-speak svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+/* ===== 选中文字「加入生词本」菜单 ===== */
+.yh-add-menu {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  padding: 6px 0;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+}
+
+.yh-add-menu [role="button"] {
+  padding: 6px 16px;
+  cursor: pointer;
+  color: #28a745;
+  white-space: nowrap;
+}
+
+.yh-add-menu [role="button"]:hover {
+  background: #f0fff4;
+}
+
+/* ===== 登录失效横幅 ===== */
+.yh-login-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
+  padding: 9px 14px;
+  background: #fff4f4;
+  border: 1px solid #f1b0b0;
+  border-left: 4px solid #dc3545;
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  color: #a33232;
+}
+
+.yh-login-banner .yh-banner-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.yh-login-banner .yh-banner-btn {
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #28a745;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.yh-login-banner .yh-banner-close {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #a33232;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ===== 结果提示（toast）=====
+ * 替代 alert：不阻塞页面，右下角自动消失。 */
+.yh-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  display: none;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 10px 14px;
+  background: #32363c;
+  color: #f2f2f2;
+  border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.24);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  word-break: break-word;
+  animation: yh-toast-in 0.18s ease-out;
+}
+
+/* 远端失败但本地已生效（文案以 ⚠️ 开头）：换成警示色 */
+.yh-toast-warn {
+  background: #7a2f2f;
+  color: #ffe3e3;
+}
+
+@keyframes yh-toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yh-toast { animation: none; }
+}
+
+/* ===== 确认框（替代 confirm）=====
+ * 居中卡片，Esc 或点击外部取消。 */
+.yh-confirm {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2147483647;
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px;
+  background: #ffffff;
+  color: #333333;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.yh-confirm-text {
+  word-break: break-word;
+}
+
+.yh-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.yh-confirm-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: 1px solid #dcdcdc;
+  background: #f5f6f7;
+  color: #333333;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.yh-confirm-btn:hover {
+  background: #eceef0;
+}
+
+.yh-confirm-btn-danger {
+  border-color: #dc3545;
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.yh-confirm-btn-danger:hover {
+  background: #c62c3b;
+}
+
+/* ===== 深色模式 =====
+ * 只覆盖「我们自己画出来的表面」（气泡 / 菜单 / 横幅）——它们的底色是我们定的，
+ * 跟随系统主题是合理的。
+ *
+ * 刻意不改高亮色（--yh-hl-*）：高亮是叠在**任意网页**的文字上的，
+ * prefers-color-scheme 反映的是操作系统主题、不是页面底色。
+ * 深色系统下用户照样会浏览白底网页，那时深色高亮反而更难看清。
+ *
+ * 生效前提：用户没自定义过配色。content.js 只在「用户显式改过」时才写行内变量，
+ * 否则移除行内值、回落到这里的默认值（行内样式优先级高于媒体查询，所以必须这么做）。 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --yh-bubble-bg: #2b2d31;
+    --yh-bubble-fg: #e6e6e6;
+
+    /* 深色底上「加深」需要更大幅度才看得出来：
+     * 32% 黑叠在 #2b2d31 上 ≈ #1d1f21（悬浮）、50% ≈ #161719（按下）。
+     * 方向仍是「压深」而非提亮，与浅色主题同一套语义。 */
+    --yh-btn-hover-bg: rgba(0, 0, 0, 0.32);
+    --yh-btn-active-bg: rgba(0, 0, 0, 0.5);
+    --yh-btn-focus-ring: rgba(255, 255, 255, 0.4);
+  }
+
+  .yh-bubble {
+    border-color: #3a3d42;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+  }
+
+  .yh-bubble-trans {
+    color: #d4d4d4;
+  }
+
+  .yh-bubble-phonetic,
+  .yh-bubble-loading {
+    color: #8b8b8b;
+  }
+
+  .yh-pos-tag {
+    color: #3fb950;
+  }
+
+  .yh-bubble-btn {
+    color: #8b8b8b;
+  }
+
+  .yh-add-menu {
+    background: #2b2d31;
+    border-color: #3a3d42;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+    color: #e6e6e6;
+  }
+
+  .yh-add-menu [role="button"] {
+    color: #3fb950;
+  }
+
+  .yh-add-menu [role="button"]:hover {
+    background: #34373c;
+  }
+
+  .yh-login-banner {
+    background: #3a2626;
+    border-color: #5c3333;
+    border-left-color: #e05656;
+    color: #f0b8b8;
+  }
+
+  .yh-login-banner .yh-banner-close {
+    color: #f0b8b8;
+  }
+}
+
+/* toast / 确认框的深色适配 */
+@media (prefers-color-scheme: dark) {
+  .yh-confirm {
+    background: #2b2d31;
+    color: #e6e6e6;
+    border-color: #3a3d42;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+
+  .yh-confirm-btn {
+    background: #3a3a3c;
+    color: #e6e6e6;
+    border-color: #48484a;
+  }
+
+  .yh-confirm-btn:hover {
+    background: #48484a;
+  }
+
+  .yh-confirm-btn-danger {
+    border-color: #e05656;
+    background: #c62c3b;
+    color: #ffffff;
+  }
+
+  .yh-confirm-btn-danger:hover {
+    background: #b02534;
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_appName__",
+  "version": "1.0.1",
+  "description": "__MSG_appDesc__",
+  "default_locale": "zh_CN",
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "images/icons/16.png",
+      "32": "images/icons/32.png",
+      "48": "images/icons/48.png",
+      "128": "images/icons/128.png"
+    }
+  },
+  "icons": {
+    "16": "images/icons/16.png",
+    "32": "images/icons/32.png",
+    "48": "images/icons/48.png",
+    "128": "images/icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "lib/word-matcher.js",
+        "lib/i18n-messages.js",
+        "lib/i18n.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "alarms",
+    "storage",
+    "cookies",
+    "tabs",
+    "tts"
+  ],
+  "host_permissions": [
+    "https://dict.youdao.com/*",
+    "http://dict.youdao.com/*",
+    "https://www.youdao.com/*",
+    "http://www.youdao.com/*",
+    "https://youdao.com/*",
+    "http://youdao.com/*"
+  ]
+}
