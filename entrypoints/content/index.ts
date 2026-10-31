@@ -59,7 +59,6 @@ export default defineContentScript({
       extDead = true;
       try {
         hideBubble();
-        removeAddMenu();
         cancelHover();
         cancelTts();
       } catch {}
@@ -194,7 +193,7 @@ export default defineContentScript({
       }
       if (
         parent.isContentEditable ||
-        parent.closest('[role="textbox"], .yh-bubble, .yh-highlight, .yh-toast, .yh-confirm, .yh-add-menu, .yh-login-banner')
+        parent.closest('[role="textbox"], .yh-bubble, .yh-highlight, .yh-toast, .yh-confirm, .yh-login-banner')
       ) {
         return false;
       }
@@ -313,7 +312,6 @@ export default defineContentScript({
               el.classList &&
               (el.classList.contains('yh-bubble') ||
                 el.classList.contains('yh-highlight') ||
-                el.classList.contains('yh-add-menu') ||
                 el.classList.contains('yh-login-banner') ||
                 el.classList.contains('yh-toast') ||
                 el.classList.contains('yh-confirm'))
@@ -1229,84 +1227,6 @@ export default defineContentScript({
       }
     }
 
-    let addMenuTimer: ReturnType<typeof setTimeout> | null = null;
-    let addMenuEl: HTMLDivElement | null = null;
-
-    function setupSelectionHandler() {
-      document.addEventListener(
-        'mouseup',
-        (e) => {
-          if (bubbleEl && bubbleEl.contains(e.target as Node)) return;
-          if (!loggedIn || !checkExtAlive()) return;
-
-          if (addMenuTimer) clearTimeout(addMenuTimer);
-          addMenuTimer = setTimeout(() => {
-            const sel = window.getSelection();
-            const selectedText = sel ? sel.toString().trim() : '';
-
-            if (!selectedText || selectedText.length < 2) return;
-            if (!/^[\sa-zA-Z']+$/.test(selectedText)) return;
-
-            const word = normalizePossessive(selectedText.trim());
-            const canonical = wordMatcher.lookup(word);
-            if (canonical && wordInfos[canonical]) return;
-
-            showAddWordMenu(word, e.clientX, e.clientY);
-          }, 400);
-        },
-        { passive: true }
-      );
-    }
-
-    function setupDblClickHandler() {
-      document.addEventListener('dblclick', (e) => {
-        if (bubbleEl && bubbleEl.contains(e.target as Node)) return;
-        if (addMenuTimer) clearTimeout(addMenuTimer);
-        removeAddMenu();
-      });
-    }
-
-    function showAddWordMenu(word: string, x: number, y: number) {
-      removeAddMenu();
-
-      addMenuEl = document.createElement('div');
-      addMenuEl.className = 'yh-add-menu';
-      addMenuEl.style.left = `${x}px`;
-      addMenuEl.style.top = `${y + 10}px`;
-
-      const item = document.createElement('div');
-      item.setAttribute('role', 'button');
-      item.textContent = t('addToWordbook', '添加「$1」到有道生词本', [word]);
-      addMenuEl.appendChild(item);
-
-      addMenuEl.addEventListener('click', () => {
-        safeSendMessage({ type: 'addWord', word }, (msg) => {
-          const text = msg || t('addedFallback', '$1 已添加', [word]);
-          showToast(text, /^⚠️/.test(text) ? 'warn' : 'ok');
-        });
-        removeAddMenu();
-      });
-
-      document.body.appendChild(addMenuEl);
-
-      setTimeout(() => {
-        document.addEventListener('mousedown', onDocClickForMenu, { once: true });
-      }, 0);
-    }
-
-    function onDocClickForMenu(e: MouseEvent) {
-      if (addMenuEl && !addMenuEl.contains(e.target as Node)) {
-        removeAddMenu();
-      }
-    }
-
-    function removeAddMenu() {
-      if (addMenuEl && addMenuEl.parentNode) {
-        addMenuEl.parentNode.removeChild(addMenuEl);
-      }
-      addMenuEl = null;
-    }
-
     function removeStaleHighlights() {
       document.querySelectorAll('.yh-highlight').forEach((el) => {
         const canonical = el.getAttribute('data-word');
@@ -1399,8 +1319,6 @@ export default defineContentScript({
 
         createBubble();
         applyStyles(result);
-        setupSelectionHandler();
-        setupDblClickHandler();
         observeDOM();
 
         chrome.storage.onChanged.addListener((changes, area) => {

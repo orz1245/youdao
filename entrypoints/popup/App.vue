@@ -319,7 +319,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, reactive } from 'vue';
+import { computed, ref, onMounted, reactive, type CSSProperties } from 'vue';
 import { useI18n } from '../../utils/i18n';
 import { toHex6, hexToRgba, toLineColor, isExtAlive } from '../../utils/storage';
 import { getVoicesCached, isGoogleVoice, isEnglishVoice, voiceOrder } from '../../utils/voice';
@@ -372,7 +372,7 @@ const previewSentenceParts = computed(() => {
   return [parts[0] || '', parts[1] || ''];
 });
 
-const previewWordStyle = computed(() => {
+const previewWordStyle = computed<CSSProperties>(() => {
   const bg = highlightBg.value || '#ffe464';
   const lineCol = toLineColor(bg);
   const fg = highlightText.value || 'inherit';
@@ -382,21 +382,24 @@ const previewWordStyle = computed(() => {
       return {
         color: fg,
         textDecoration: `underline ${lineCol} 2px`,
-        textUnderlineOffset: '3px',
+        textUnderlineOffset: '4.5px',
+        textDecorationSkipInk: 'none',
         backgroundColor: 'transparent',
       };
     case 'wavy':
       return {
         color: fg,
         textDecoration: `underline wavy ${lineCol} 1.5px`,
-        textUnderlineOffset: '3.5px',
+        textUnderlineOffset: '5px',
+        textDecorationSkipInk: 'none',
         backgroundColor: 'transparent',
       };
     case 'dashed':
       return {
         color: fg,
         textDecoration: `underline dashed ${lineCol} 1.5px`,
-        textUnderlineOffset: '3px',
+        textUnderlineOffset: '4.5px',
+        textDecorationSkipInk: 'none',
         backgroundColor: 'transparent',
       };
     case 'outline':
@@ -404,7 +407,7 @@ const previewWordStyle = computed(() => {
         color: fg,
         border: `1.5px solid ${lineCol}`,
         borderRadius: '4px',
-        padding: '1px 5px',
+        padding: '2px 5px',
         backgroundColor: 'transparent',
       };
     case 'bg':

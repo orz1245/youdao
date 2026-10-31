@@ -42,12 +42,13 @@
   background-color: var(--yh-hl-bg-hover);
 }
 
-/* 直线下划线 */
+/* 直线下划线：下移 4.5px 并关闭 skip-ink，避免与 g/j/p/q/y 字符降部重叠或产生断裂 */
 [data-yh-style="underline"] .yh-highlight {
   background-color: transparent;
   color: var(--yh-hl-fg, inherit);
   text-decoration: underline var(--yh-hl-line) 2px;
-  text-underline-offset: 3px;
+  text-underline-offset: 4.5px;
+  text-decoration-skip-ink: none;
   border-radius: 2px;
 }
 [data-yh-style="underline"] .yh-highlight:hover {
@@ -55,12 +56,13 @@
   text-decoration-color: var(--yh-hl-line-hover);
 }
 
-/* 波浪线 */
+/* 波浪线：下移 5px 并关闭 skip-ink，波峰波谷自然置于字母下方 */
 [data-yh-style="wavy"] .yh-highlight {
   background-color: transparent;
   color: var(--yh-hl-fg, inherit);
   text-decoration: underline wavy var(--yh-hl-line) 1.5px;
-  text-underline-offset: 3.5px;
+  text-underline-offset: 5px;
+  text-decoration-skip-ink: none;
   border-radius: 2px;
 }
 [data-yh-style="wavy"] .yh-highlight:hover {
@@ -68,12 +70,13 @@
   text-decoration-color: var(--yh-hl-line-hover);
 }
 
-/* 虚线下划线 */
+/* 虚线下划线：下移 4.5px 并关闭 skip-ink */
 [data-yh-style="dashed"] .yh-highlight {
   background-color: transparent;
   color: var(--yh-hl-fg, inherit);
   text-decoration: underline dashed var(--yh-hl-line) 1.5px;
-  text-underline-offset: 3px;
+  text-underline-offset: 4.5px;
+  text-decoration-skip-ink: none;
   border-radius: 2px;
 }
 [data-yh-style="dashed"] .yh-highlight:hover {
@@ -81,14 +84,17 @@
   text-decoration-color: var(--yh-hl-line-hover);
 }
 
-/* 圆角边框 */
+/* 圆角边框：增加上下 2px 与左右 5px 内边距，边框彻底远离字符边缘 */
 [data-yh-style="outline"] .yh-highlight {
   background-color: transparent;
   color: var(--yh-hl-fg, inherit);
   border: 1.5px solid var(--yh-hl-line);
   border-radius: 4px;
-  padding: 0 3px;
+  padding: 2px 5px;
+  margin: 0 1.5px;
   box-sizing: border-box;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 [data-yh-style="outline"] .yh-highlight:hover {
   background-color: var(--yh-hl-line-tint);
@@ -104,27 +110,41 @@
   cursor: default;
 }
 
-/* ===== 释义气泡 ===== */
+/* ===== 释义气泡：现代轻拟物与毛玻璃卡片风格 ===== */
 .yh-bubble {
-  background: var(--yh-bubble-bg);
-  border: 1px solid #dcdcdc;
-  border-radius: 10px;
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
-  padding: 12px;
+  background: var(--yh-bubble-bg, #ffffff);
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 12px 28px -4px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 12px 14px;
   position: fixed;
   z-index: 2147483647;
-  width: 280px !important;
-  max-width: 280px !important;
-  min-width: 280px !important;
+  width: 290px !important;
+  max-width: 290px !important;
+  min-width: 290px !important;
   box-sizing: border-box !important;
   display: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.55;
   pointer-events: auto;
   cursor: default;
   overflow: hidden;
-  color: var(--yh-bubble-fg);
+  color: var(--yh-bubble-fg, #1e293b);
+  animation: yh-bubble-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes yh-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 用户在设置里指定了气泡文字色 → 整块统一（含子元素） */
@@ -134,7 +154,7 @@
 }
 
 /* 窄窗口自适应，避免气泡溢出屏幕 */
-@media (max-width: 280px) {
+@media (max-width: 290px) {
   .yh-bubble {
     width: auto !important;
     max-width: calc(100vw - 16px) !important;
@@ -145,7 +165,7 @@
 /* 高 DPI 屏幕确保边框和阴影清晰 */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .yh-bubble {
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 12px 28px -4px rgba(0, 0, 0, 0.16);
     border-width: 0.5px;
   }
 }
@@ -153,36 +173,42 @@
 .yh-bubble-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* 单词 + 喇叭：同一行内垂直居中。
-   历史坑：这层 div 原先没有样式，是普通块级行盒，里面的喇叭按钮按 baseline 对齐
-   （只含块级子元素的按钮，基线=盒子底边），会把整行撑高，单词被压到行底，
-   音标与删除按钮却按 align-items:center 居中 → 一行元素看起来全都没对齐。 */
 .yh-bubble-head-word {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
   flex: 0 1 auto;
   min-width: 0;
 }
 
 .yh-bubble-word-text {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
+  letter-spacing: -0.2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1 1 auto;
   min-width: 0;
+  color: #0f172a;
 }
 
 .yh-bubble-phonetic {
-  font-weight: 400;
-  font-size: 12px;
-  color: #999999;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .yh-bubble-action {
@@ -190,87 +216,102 @@
 }
 
 .yh-bubble-trans {
-  color: #444444;
+  color: #334155;
   word-break: break-word;
   display: flex;
   flex-direction: column;
   gap: 5px;
+  font-size: 12.5px;
 }
 
 .yh-bubble-loading {
-  color: #999999;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .yh-pos-line {
   display: flex;
-  gap: 3px;
-  align-items: flex-start;
+  gap: 6px;
+  align-items: baseline;
 }
 
 .yh-pos-tag {
   flex: 0 0 auto;
-  color: #28a745;
-  font-style: italic;
-  font-size: 12px;
-  padding-top: 1px;
-  min-width: 20px;
-  text-align: right;
+  color: #059669;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 11px;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  min-width: 22px;
+  text-align: center;
 }
 
 .yh-pos-text {
   flex: 1 1 auto;
+  color: #334155;
+  line-height: 1.5;
 }
 
-/* ===== 图标按钮（喇叭 / 加入 / 删除）=====
- * 交互反馈统一用「底色加深」表达：悬浮 6% 黑、按下 12% 黑（深色主题见文件末深色段）。
- * 只动 background-color —— 尺寸 / 圆角 / 图标 / 文字样式一律不碰，
- * 划过或按下时不会位移、缩放、抖动（不写 transition: all，避免把边框等一起动画）。
- *
- * 过渡分出入两段（有意为之）：
- *   移入（:hover 里的 transition）0.15s —— 响应跟手；
- *   移出（回落到本条的 transition）0.24s —— 稍慢淡回，鼠标快速扫过一排按钮时不会闪。 */
+/* ===== 图标按钮（喇叭 / 加入 / 删除）===== */
 .yh-bubble-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border-radius: 50%;
   cursor: pointer;
   border: none;
   background-color: transparent;
-  color: #999999;
+  color: #94a3b8;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   flex-shrink: 0;
-  transition: background-color 0.24s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: all 0.15s ease;
 }
 
-/* 悬浮：底色加深一档，0.15s 快速起效 */
-.yh-bubble-btn:hover {
-  background-color: var(--yh-btn-hover-bg);
-  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+/* 喇叭按钮 */
+.yh-bubble-speak {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+.yh-bubble-speak:hover {
+  background-color: #d1fae5;
+  color: #047857;
+  transform: scale(1.08);
+}
+.yh-bubble-speak:active {
+  transform: scale(0.95);
 }
 
-/* 按下：再深一档，过渡压到 0.08s，点击反馈即时 */
-.yh-bubble-btn:active {
-  background-color: var(--yh-btn-active-bg);
-  transition: background-color 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+/* 动作按钮：删除 */
+.yh-bubble-action.danger:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
+  transform: scale(1.08);
 }
 
-/* 键盘聚焦：内收 2px 描边环（outline 不占布局，尺寸/形状不变）；鼠标点击不触发 focus-visible */
-.yh-bubble-btn:focus-visible {
-  background-color: var(--yh-btn-hover-bg);
-  outline: 2px solid var(--yh-btn-focus-ring);
-  outline-offset: -2px;
+/* 动作按钮：添加 */
+.yh-bubble-action.primary {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+.yh-bubble-action.primary:hover {
+  background-color: #d1fae5;
+  color: #047857;
+  transform: scale(1.08);
 }
 
 .yh-bubble-btn svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
-  overflow: visible;
 }
 
 /* 动作按钮（加入/删除）：不单独配色，沿用 .yh-bubble-btn 的中性灰；
@@ -296,30 +337,6 @@
   display: block;
   width: 15px;
   height: 15px;
-}
-
-/* ===== 选中文字「加入生词本」菜单 ===== */
-.yh-add-menu {
-  position: fixed;
-  background: #ffffff;
-  border: 1px solid #dddddd;
-  border-radius: 6px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  padding: 6px 0;
-  z-index: 2147483647;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 13px;
-}
-
-.yh-add-menu [role="button"] {
-  padding: 6px 16px;
-  cursor: pointer;
-  color: #28a745;
-  white-space: nowrap;
-}
-
-.yh-add-menu [role="button"]:hover {
-  background: #f0fff4;
 }
 
 /* ===== 登录失效横幅 ===== */
@@ -495,40 +512,59 @@
   }
 
   .yh-bubble {
-    border-color: #3a3d42;
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+    background: rgba(30, 31, 34, 0.96);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    color: #f1f5f9;
   }
 
-  .yh-bubble-trans {
-    color: #d4d4d4;
+  .yh-bubble-head {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
   }
 
-  .yh-bubble-phonetic,
-  .yh-bubble-loading {
-    color: #8b8b8b;
+  .yh-bubble-word-text {
+    color: #f8fafc;
+  }
+
+  .yh-bubble-phonetic {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .yh-bubble-speak {
+    background-color: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+  }
+
+  .yh-bubble-speak:hover {
+    background-color: rgba(52, 211, 153, 0.25);
+  }
+
+  .yh-bubble-action.danger:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+  }
+
+  .yh-bubble-action.primary {
+    background-color: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+  }
+
+  .yh-bubble-action.primary:hover {
+    background-color: rgba(52, 211, 153, 0.25);
   }
 
   .yh-pos-tag {
-    color: #3fb950;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.18);
   }
 
-  .yh-bubble-btn {
+  .yh-pos-text {
+    color: #cbd5e1;
+  }
+
+  .yh-bubble-loading {
     color: #8b8b8b;
-  }
-
-  .yh-add-menu {
-    background: #2b2d31;
-    border-color: #3a3d42;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
-    color: #e6e6e6;
-  }
-
-  .yh-add-menu [role="button"] {
-    color: #3fb950;
-  }
-
-  .yh-add-menu [role="button"]:hover {
-    background: #34373c;
   }
 
   .yh-login-banner {
