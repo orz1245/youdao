@@ -7,23 +7,37 @@
           <img src="/icon/32.png" alt="Logo" width="24" height="24" class="brand-icon" />
           <span class="brand-title">{{ isZh ? '生词高亮助手' : 'Vocabulary Highlighter' }}</span>
         </div>
-        <div class="lang-switcher">
-          <button
-            type="button"
-            class="lang-pill"
-            :class="{ active: lang === 'zh_CN' }"
-            @click="setLang('zh_CN')"
+        <div class="nav-right">
+          <a
+            href="https://github.com/orz1245/youdao"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-github-link"
+            :title="isZh ? '访问 GitHub 开源仓库' : 'Visit GitHub Repository'"
           >
-            中文
-          </button>
-          <button
-            type="button"
-            class="lang-pill"
-            :class="{ active: lang === 'en' }"
-            @click="setLang('en')"
-          >
-            English
-          </button>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            <span class="github-text">GitHub</span>
+          </a>
+          <div class="lang-switcher">
+            <button
+              type="button"
+              class="lang-pill"
+              :class="{ active: lang === 'zh_CN' }"
+              @click="setLang('zh_CN')"
+            >
+              中文
+            </button>
+            <button
+              type="button"
+              class="lang-pill"
+              :class="{ active: lang === 'en' }"
+              @click="setLang('en')"
+            >
+              English
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -62,6 +76,14 @@
           </a>
           <a href="#faq" class="btn btn-ghost">
             {{ isZh ? '常见问题' : 'FAQ' }}
+          </a>
+          <a
+            href="https://github.com/orz1245/youdao"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-ghost"
+          >
+            GitHub
           </a>
         </div>
       </div>
@@ -446,13 +468,25 @@
             </div>
             <span class="copy-hint">{{ isZh ? '发送邮件' : 'Send email' }}</span>
           </a>
+
+          <a href="https://github.com/orz1245/youdao" target="_blank" rel="noopener noreferrer" class="contact-badge">
+            <div class="contact-icon">🐙</div>
+            <div class="contact-info">
+              <div class="contact-label">GitHub</div>
+              <div class="contact-value">orz1245/youdao</div>
+            </div>
+            <span class="copy-hint">{{ isZh ? '前往 Star' : 'Star on GitHub' }}</span>
+          </a>
         </div>
       </section>
     </main>
 
     <!-- 底部版权 -->
     <footer class="page-footer">
-      <p>© 2026 生词高亮助手 · Modernized with WXT + TypeScript + Vue 3 · 纯净开源</p>
+      <p>
+        {{ isZh ? '© 2026 生词高亮助手 · ' : '© 2026 Vocabulary Highlighter · ' }}
+        <a href="https://github.com/orz1245/youdao" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub 开源</a>
+      </p>
     </footer>
   </div>
 </template>
@@ -650,6 +684,41 @@ onMounted(() => {
   font-size: 15px;
   color: #0f172a;
   letter-spacing: -0.2px;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nav-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.nav-github-link:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateY(-1px);
+}
+.footer-link {
+  color: #059669;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+.footer-link:hover {
+  text-decoration: underline;
+  color: #047857;
 }
 .lang-switcher {
   display: flex;
@@ -1263,6 +1332,22 @@ onMounted(() => {
   }
   .brand-title {
     color: #f8fafc;
+  }
+  .nav-github-link {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+  .nav-github-link:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #f8fafc;
+  }
+  .footer-link {
+    color: #34d399;
+  }
+  .footer-link:hover {
+    color: #6ee7b7;
   }
   .lang-switcher {
     background: #1e293b;
