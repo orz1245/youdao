@@ -324,6 +324,7 @@ import { useI18n } from '../../utils/i18n';
 import { toHex6, hexToRgba, toLineColor, isExtAlive } from '../../utils/storage';
 import { getVoicesCached, isGoogleVoice, isEnglishVoice, voiceOrder } from '../../utils/voice';
 import type { TtsVoiceLike } from '../../utils/voice';
+import { detectLoginByCookie } from '../../utils/youdao-api';
 import type { Settings, WordbookData, CheckLoginResponse, HighlightStyle } from '../../types';
 
 const { t, setLanguage } = useI18n();
@@ -623,42 +624,28 @@ function formatVoiceName(v: TtsVoiceLike): string {
   return v.lang ? `${shortName}（${v.lang}）` : shortName;
 }
 
-const KNOWN_LOGIN_COOKIES = [
-  'DICT_SESS', 'OUTFOX_CNR_MEMBER_LOGIN', 'OUTFOX_CNR_MEMBER',
-  'USER_ID', 'P_INFO', 'YNOTE_SESS', 'JSESSIONID', 'yd_tm_task',
-];
-const LOGIN_COOKIE_RE = /sess|uid|user|token|auth|login|member|pfr|qa/i;
-
-async function detectLoginByCookie(): Promise<boolean> {
-  if (!chrome.cookies || !chrome.cookies.getAll) return false;
-  const sources = ['https://www.youdao.com/', 'https://youdao.com/'];
-  for (const url of sources) {
-    try {
-      const cookies = await new Promise<chrome.cookies.Cookie[]>((res) => {
-        chrome.cookies.getAll({ url }, (cs) => {
-          if (chrome.runtime.lastError) res([]);
-          else res(cs || []);
-        });
-      });
-      if (cookies.some((c) => KNOWN_LOGIN_COOKIES.includes(c.name) || LOGIN_COOKIE_RE.test(c.name))) {
-        return true;
-      }
-    } catch {}
-  }
-  return false;
-}
-
 function checkLogin(callback: (loggedIn: boolean) => void) {
   chrome.storage.local.get(['loggedIn', 'userLoggedOut'], (s: any) => {
-    if (s.loggedIn) {
-      callback(true);
-      return;
-    }
     if (s.userLoggedOut) {
       callback(false);
       return;
     }
-    detectLoginByCookie().then(callback);
+    // 未登录或首次安装时，检查是否有实际登录 Cookie
+    if (!s.loggedIn) {
+      detectLoginByCookie().then((hasCookie) => {
+        callback(hasCookie);
+      });
+      return;
+    }
+    // storage 中记录已登录，但用 cookie 双重核验是否已在网页端失效
+    detectLoginByCookie().then((hasCookie) => {
+      if (!hasCookie) {
+        chrome.storage.local.set({ loggedIn: false });
+        callback(false);
+      } else {
+        callback(true);
+      }
+    });
   });
 }
 

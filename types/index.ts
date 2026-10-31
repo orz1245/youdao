@@ -101,6 +101,7 @@ export interface CheckLoginResponse {
   loggedIn: boolean;
   userLoggedOut?: boolean;
   reason?: string;
+  userId?: string;
 }
 
 export interface LookupResponse {

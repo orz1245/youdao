@@ -138,11 +138,22 @@ function showConfirm(message, confirmLabel) {
 
 // 有道登录会话 cookie 已知名称（站点改版后可能变化，待浏览器验证）
 const KNOWN_LOGIN_COOKIES = [
-  'DICT_SESS', 'OUTFOX_CNR_MEMBER_LOGIN', 'OUTFOX_CNR_MEMBER',
-  'USER_ID', 'P_INFO', 'YNOTE_SESS', 'JSESSIONID', 'yd_tm_task'
+  'DICT_SESS', 'OUTFOX_CNR_MEMBER_LOGIN', 'YNOTE_SESS'
 ];
-// 兜底启发式：匹配任意疑似会话/用户类 cookie
-const LOGIN_COOKIE_RE = /sess|uid|user|token|auth|login|member|pfr|qa/i;
+
+function isLoginCookie(c) {
+  if (!c || !c.name) return false;
+  const name = c.name.trim();
+  if (KNOWN_LOGIN_COOKIES.includes(name)) {
+    return Boolean(c.value && c.value.trim().length > 0);
+  }
+  if (name === 'P_INFO') {
+    if (!c.value) return false;
+    const firstPart = c.value.split('|')[0].trim();
+    return Boolean(firstPart && firstPart.length > 0 && !firstPart.includes('undefined'));
+  }
+  return false;
+}
 
 /**
  * 读取某域下的 cookie，吞掉 host 权限缺失导致的 lastError（避免控制台报错）
@@ -157,14 +168,13 @@ function readCookiesFor(url) {
 }
 
 /**
- * 通过 cookie 判断有道登录态（扫描 www 与根域，覆盖 .youdao.com 通配 cookie）
+ * 通过 cookie 判断有道登录态（严格匹配真实登录会话，排除访客标识）
  */
 async function detectLoginByCookie() {
-  const sources = ['https://www.youdao.com/', 'https://youdao.com/'];
+  const sources = ['https://dict.youdao.com/', 'https://www.youdao.com/', 'https://youdao.com/'];
   for (const url of sources) {
     const cookies = await readCookiesFor(url);
-    if (cookies.some(c =>
-      KNOWN_LOGIN_COOKIES.includes(c.name) || LOGIN_COOKIE_RE.test(c.name))) {
+    if (cookies.some(isLoginCookie)) {
       return true;
     }
   }

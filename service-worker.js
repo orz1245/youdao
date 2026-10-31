@@ -435,12 +435,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
       }
       checkLoginServer().then((r) => {
-        if (!r.ok) chrome.storage.local.set({ loggedIn: false });
-        reply({ ok: r.ok, needLogin: r.needLogin, loggedIn: r.ok });
+        const isLogged = !!(r.ok && r.loggedIn !== false);
+        chrome.storage.local.set({ loggedIn: isLogged });
+        reply({ ok: isLogged, needLogin: !isLogged, loggedIn: isLogged, reason: r.reason, userId: r.userId });
       }).catch((e) => {
-        // 探测本身异常时不改变登录态（宁可不误报），但必须回响应
         console.warn('[YH] 登录探测异常:', e && e.message);
-        reply({ ok: true, needLogin: false, loggedIn: true });
+        chrome.storage.local.get(['loggedIn'], (stored) => {
+          const isLogged = !!stored.loggedIn;
+          reply({ ok: isLogged, needLogin: !isLogged, loggedIn: isLogged, reason: '网络错误，无法探测' });
+        });
       });
     });
     return true; // 异步响应
@@ -537,6 +540,7 @@ const YOUDAO_SUGGEST_URL = 'https://dict.youdao.com/suggest';
 // 重新登录入口：直接打生词本页，未登录会被有道重定向到登录页；登录后回跳本页，
 // 比凭记忆写 passport 登录地址更稳（有道登录域名会改版）。
 const YOUDAO_LOGIN_URL = YOUDAO_WORDLIST_URL;
+const YOUDAO_ACCOUNT_URL = 'https://dict.youdao.com/login/acc/query/accountinfo';
 
 // ===== 同步诊断 =====
 // 不保存 HTML 正文、Cookie 或词条内容，只保留接口/页面特征和结果，便于有道改版后定位问题。
@@ -576,11 +580,16 @@ function responseMetadata(res) {
 function describeWordbookPage(html) {
   const text = typeof html === 'string' ? html : '';
   const build = text.match(/(?:buildId|build_id)\s*["':=]+\s*([\w.-]{1,80})/i);
+  const hasLoginMarker =
+    /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text) ||
+    /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(text) ||
+    /window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(text);
+
   return {
     parserVersion: NUXT_PARSER_VERSION,
     htmlBytes: text.length,
     hasNuxtPayload: text.includes('__NUXT__'),
-    hasLoginMarker: /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text),
+    hasLoginMarker,
     nuxtBuildId: build ? build[1] : ''
   };
 }
@@ -820,15 +829,62 @@ function interpretYoudao(data) {
  */
 async function checkLoginServer() {
   try {
+    const res = await fetch(YOUDAO_ACCOUNT_URL, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json, text/plain, */*' },
+    });
+    if (res.ok) {
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (data && typeof data === 'object') {
+        const code = data.code !== undefined ? Number(data.code) : undefined;
+        if (code === 0) {
+          return {
+            ok: true,
+            needLogin: false,
+            loggedIn: true,
+            userId: data.userId || data.userName || data.nickname || '',
+          };
+        }
+        if (code === 2035 || data.msg === 'NO_LOGIN' || (code !== undefined && code !== 0)) {
+          return {
+            ok: false,
+            needLogin: true,
+            loggedIn: false,
+            reason: data.msg || '未登录',
+          };
+        }
+      }
+    }
+  } catch (e) {
+    logDebug('查询 accountinfo 异常，尝试降级探测:', e && e.message);
+  }
+
+  try {
     const res = await fetch(YOUDAO_LOGIN_URL, { method: 'GET', credentials: 'include', cache: 'no-store' });
     const text = await res.text();
-    const expired = !text.includes('__NUXT__') &&
+    const isRedirectedToLogin =
+      !text.includes('__NUXT__') &&
       /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text);
-    if (expired) return { ok: false, needLogin: true, reason: '服务端探测到登录已失效' };
-    return { ok: true, needLogin: false };
+    const hasLoginButton =
+      /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(text) ||
+      /<a[^>]*href=["'][^"']*(?:login|signin)[^"']*["']/i.test(text);
+    const nuxtIsLoggedOut =
+      /login\s*:\s*\{[^}]*isLogin\s*:\s*(?:false|\w+)[^}]*\}/.test(text) &&
+      /window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(text);
+
+    if (isRedirectedToLogin || hasLoginButton || nuxtIsLoggedOut) {
+      return { ok: false, needLogin: true, loggedIn: false, reason: '服务端探测到登录已失效' };
+    }
+    return { ok: true, needLogin: false, loggedIn: true };
   } catch (e) {
-    // 网络错误无法判断，保守返回 ok:true，避免误清登录态伤到正常用户
-    return { ok: true, needLogin: false, reason: '网络错误，无法探测' };
+    return { ok: false, needLogin: false, loggedIn: false, reason: '网络错误，无法探测' };
   }
 }
 
@@ -908,8 +964,13 @@ function syncYoudao(sendResponse, trigger = 'manual') {
     }
 
     const page = describeWordbookPage(html);
-    // 登录失效：S1 页被重定向到登录页（无 __NUXT__ 生词数据且含登录标记）
-    if (html && !page.hasNuxtPayload && page.hasLoginMarker) {
+    const isLoggedOutNuxt =
+      page.hasNuxtPayload &&
+      (/window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(html) ||
+       /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(html));
+
+    // 登录失效：S1 页被重定向到登录页或检测到未登录状态
+    if (html && ((!page.hasNuxtPayload && page.hasLoginMarker) || isLoggedOutNuxt)) {
       markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
       finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
         ok: false, strategy: 'S1', reason: 'login-expired'
@@ -948,8 +1009,20 @@ function syncYoudao(sendResponse, trigger = 'manual') {
       return strategy3();
     }
 
-    // 空生词本也是一次成功同步：必须落库清空旧缓存，不能继续降级后报失败。
+    // 空生词本也是一次成功同步，但未登录请求同样返回空列表，需核验真实登录状态
     if (data && Number(data.code) === 0 && Array.isArray(data.data?.itemList)) {
+      if (data.data.itemList.length > 0) {
+        saveSuccess(data.data.itemList, 'S2');
+        return;
+      }
+      const loginStatus = await checkLoginServer();
+      if (!loginStatus.loggedIn) {
+        markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
+        finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
+          ok: false, strategy: 'S2', reason: 'login-expired'
+        });
+        return;
+      }
       saveSuccess(data.data.itemList, 'S2');
       return;
     }
@@ -980,6 +1053,18 @@ function syncYoudao(sendResponse, trigger = 'manual') {
     }
 
     if (data && (Number(data.code) === 0 || Number(data.errorCode) === 0) && Array.isArray(data.data?.itemList)) {
+      if (data.data.itemList.length > 0) {
+        saveSuccess(data.data.itemList, 'S3');
+        return;
+      }
+      const loginStatus = await checkLoginServer();
+      if (!loginStatus.loggedIn) {
+        markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
+        finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
+          ok: false, strategy: 'S3', reason: 'login-expired'
+        });
+        return;
+      }
       saveSuccess(data.data.itemList, 'S3');
       return;
     }

@@ -18,7 +18,53 @@ export const YOUDAO_ADD_URL = 'https://dict.youdao.com/wordbook/webapi/v2/ajax/a
 export const YOUDAO_DELETE_URL = 'https://dict.youdao.com/wordbook/webapi/v2/ajax/del';
 export const YOUDAO_SUGGEST_URL = 'https://dict.youdao.com/suggest';
 export const YOUDAO_LOGIN_URL = YOUDAO_WORDLIST_URL;
+export const YOUDAO_ACCOUNT_URL = 'https://dict.youdao.com/login/acc/query/accountinfo';
 export const S3_URL = 'https://dict.youdao.com/wordbook/webapi/words?limit=100000&offset=0';
+
+export const STRICT_LOGIN_COOKIE_NAMES = [
+  'DICT_SESS',
+  'YNOTE_SESS',
+  'OUTFOX_CNR_MEMBER_LOGIN',
+] as const;
+
+export function isLoginCookie(c: { name: string; value?: string } | null | undefined): boolean {
+  if (!c || !c.name) return false;
+  const name = c.name.trim();
+  if (STRICT_LOGIN_COOKIE_NAMES.includes(name as any)) {
+    return Boolean(c.value && c.value.trim().length > 0);
+  }
+  if (name === 'P_INFO') {
+    if (!c.value) return false;
+    const firstPart = c.value.split('|')[0]?.trim();
+    return Boolean(firstPart && firstPart.length > 0 && !firstPart.includes('undefined'));
+  }
+  return false;
+}
+
+export async function detectLoginByCookie(): Promise<boolean> {
+  if (typeof chrome === 'undefined' || !chrome.cookies || !chrome.cookies.getAll) return false;
+  const sources = [
+    'https://dict.youdao.com/',
+    'https://www.youdao.com/',
+    'https://youdao.com/',
+  ];
+  for (const url of sources) {
+    try {
+      const cookies = await new Promise<chrome.cookies.Cookie[]>((resolve) => {
+        chrome.cookies.getAll({ url }, (cs) => {
+          if (chrome.runtime?.lastError) resolve([]);
+          else resolve(cs || []);
+        });
+      });
+      if (cookies.some(isLoginCookie)) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return false;
+}
 
 export const SYNC_DIAGNOSTICS_KEY = 'syncDiagnostics';
 export const SYNC_DIAGNOSTICS_SCHEMA_VERSION = 1;
@@ -60,11 +106,16 @@ export function responseMetadata(res: Response) {
 export function describeWordbookPage(html: string) {
   const text = typeof html === 'string' ? html : '';
   const build = text.match(/(?:buildId|build_id)\s*["':=]+\s*([\w.-]{1,80})/i);
+  const hasLoginMarker =
+    /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text) ||
+    /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(text) ||
+    /window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(text);
+
   return {
     parserVersion: NUXT_PARSER_VERSION,
     htmlBytes: text.length,
     hasNuxtPayload: text.includes('__NUXT__'),
-    hasLoginMarker: /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text),
+    hasLoginMarker,
     nuxtBuildId: build && build[1] ? build[1] : '',
   };
 }
@@ -155,18 +206,74 @@ export async function youdaoAjaxGet(url: string): Promise<GenericResponse> {
 }
 
 export async function checkLoginServer(): Promise<CheckLoginResponse> {
+  // 1. 优先调用有道官方账号状态探测接口（最权威、无 SSR 模板假阳性）
   try {
-    const res = await fetch(YOUDAO_LOGIN_URL, { method: 'GET', credentials: 'include', cache: 'no-store' });
+    const res = await fetch(YOUDAO_ACCOUNT_URL, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json, text/plain, */*' },
+    });
+    if (res.ok) {
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (data && typeof data === 'object') {
+        const code = data.code !== undefined ? Number(data.code) : undefined;
+        // code 为 0 表示已登录
+        if (code === 0) {
+          return {
+            ok: true,
+            needLogin: false,
+            loggedIn: true,
+            userId: data.userId || data.userName || data.nickname || '',
+          };
+        }
+        // code 为 2035 或 msg 为 NO_LOGIN 或非 0，明确代表未登录
+        if (code === 2035 || data.msg === 'NO_LOGIN' || (code !== undefined && code !== 0)) {
+          return {
+            ok: false,
+            needLogin: true,
+            loggedIn: false,
+            reason: data.msg || '未登录',
+          };
+        }
+      }
+    }
+  } catch (e: any) {
+    logDebug('查询 accountinfo 异常，尝试降级探测:', e && e.message);
+  }
+
+  // 2. 降级方案：拉取生词本页面探测未登录特征
+  try {
+    const res = await fetch(YOUDAO_WORDLIST_URL, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      return { ok: false, needLogin: true, loggedIn: false, reason: 'HTTP ' + res.status };
+    }
     const text = await res.text();
-    const expired =
+    const isRedirectedToLogin =
       !text.includes('__NUXT__') &&
       /passport|login|请登录|未登录|登录后|signin|sign_in/i.test(text);
-    if (expired) {
+    const hasLoginButton =
+      /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(text) ||
+      /<a[^>]*href=["'][^"']*(?:login|signin)[^"']*["']/i.test(text);
+    const nuxtIsLoggedOut =
+      /login\s*:\s*\{[^}]*isLogin\s*:\s*(?:false|\w+)[^}]*\}/.test(text) &&
+      /window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(text);
+
+    if (isRedirectedToLogin || hasLoginButton || nuxtIsLoggedOut) {
       return { ok: false, needLogin: true, loggedIn: false, reason: '服务端探测到登录已失效' };
     }
     return { ok: true, needLogin: false, loggedIn: true };
   } catch (e: any) {
-    return { ok: true, needLogin: false, loggedIn: true, reason: '网络错误，无法探测' };
+    return { ok: false, needLogin: false, loggedIn: false, reason: '网络错误，无法探测' };
   }
 }
 
@@ -358,7 +465,12 @@ export function syncYoudao(sendResponse: (msg: string) => void, trigger: string 
     }
 
     const page = describeWordbookPage(html);
-    if (html && !page.hasNuxtPayload && page.hasLoginMarker) {
+    const isLoggedOutNuxt =
+      page.hasNuxtPayload &&
+      (/window\.__NUXT__\s*=[\s\S]*?\(\s*["']{2}\s*,\s*false\b/.test(html) ||
+       /<a[^>]*class=["'][^"']*\blogin\b[^"']*["'][^>]*>[\s\S]*?登录[\s\S]*?<\/a>/i.test(html));
+
+    if (html && ((!page.hasNuxtPayload && page.hasLoginMarker) || isLoggedOutNuxt)) {
       markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
       finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
         ok: false,
@@ -402,6 +514,20 @@ export function syncYoudao(sendResponse: (msg: string) => void, trigger: string 
     }
 
     if (data && Number(data.code) === 0 && Array.isArray(data.data?.itemList)) {
+      if (data.data.itemList.length > 0) {
+        saveSuccess(data.data.itemList, 'S2');
+        return;
+      }
+      const loginStatus = await checkLoginServer();
+      if (!loginStatus.loggedIn) {
+        markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
+        finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
+          ok: false,
+          strategy: 'S2',
+          reason: 'login-expired',
+        });
+        return;
+      }
       saveSuccess(data.data.itemList, 'S2');
       return;
     }
@@ -432,6 +558,20 @@ export function syncYoudao(sendResponse: (msg: string) => void, trigger: string 
     }
 
     if (data && (Number(data.code) === 0 || Number(data.errorCode) === 0) && Array.isArray(data.data?.itemList)) {
+      if (data.data.itemList.length > 0) {
+        saveSuccess(data.data.itemList, 'S3');
+        return;
+      }
+      const loginStatus = await checkLoginServer();
+      if (!loginStatus.loggedIn) {
+        markLoginExpired(t('reasonSyncLoginExpired', '同步时发现登录已失效'));
+        finish(t('syncLoginExpired', '⚠️ 登录已失效，请重新登录有道词典后再次同步'), {
+          ok: false,
+          strategy: 'S3',
+          reason: 'login-expired',
+        });
+        return;
+      }
       saveSuccess(data.data.itemList, 'S3');
       return;
     }

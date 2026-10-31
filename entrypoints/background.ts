@@ -159,12 +159,16 @@ export default defineBackground(() => {
         }
         checkLoginServer()
           .then((r) => {
-            if (!r.ok) chrome.storage.local.set({ loggedIn: false });
-            reply({ ok: r.ok, needLogin: r.needLogin, loggedIn: r.ok });
+            const isLogged = !!(r.ok && r.loggedIn);
+            chrome.storage.local.set({ loggedIn: isLogged });
+            reply({ ok: isLogged, needLogin: !isLogged, loggedIn: isLogged, reason: r.reason, userId: r.userId });
           })
           .catch((e) => {
             console.warn('[YH] 登录探测异常:', e && e.message);
-            reply({ ok: true, needLogin: false, loggedIn: true });
+            chrome.storage.local.get(['loggedIn'], (stored) => {
+              const isLogged = !!stored.loggedIn;
+              reply({ ok: isLogged, needLogin: !isLogged, loggedIn: isLogged, reason: '网络错误，无法探测' });
+            });
           });
       });
       return true;

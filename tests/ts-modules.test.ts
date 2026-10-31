@@ -3,7 +3,15 @@ import { WordMatcher, normalizePossessive } from '../utils/word-matcher';
 import { toHex6, hexToRgba, cacheEntry, toLineColor } from '../utils/storage';
 import { isGoogleVoice, isEnglishVoice, resolveVoice, voiceOrder } from '../utils/voice';
 import { t, setLanguage, resolveEffectiveLocale } from '../utils/i18n';
-import { detectLan, interpretYoudao, extractFromNuxt } from '../utils/youdao-api';
+import {
+  detectLan,
+  interpretYoudao,
+  extractFromNuxt,
+  isLoginCookie,
+  checkLoginServer,
+  YOUDAO_ACCOUNT_URL,
+  YOUDAO_WORDLIST_URL,
+} from '../utils/youdao-api';
 import { isExcludedElement, isHighlightableTextNode } from '../utils/dom-filter';
 
 describe('WordMatcher (TypeScript)', () => {
@@ -150,6 +158,101 @@ describe('Youdao API Parsing', () => {
     expect(words.length).toBe(1);
     expect(words[0]?.word).toBe('abandon');
     expect(words[0]?.trans).toBe('v. 放弃');
+  });
+});
+
+describe('Youdao Login Authentication & Verification', () => {
+  it('correctly filters login cookies and rejects tracking visitor cookies', () => {
+    // Visitor cookies must NEVER be recognized as login
+    expect(isLoginCookie({ name: 'OUTFOX_SEARCH_USER_ID', value: '1226147805@10.104.133.62' })).toBe(false);
+    expect(isLoginCookie({ name: 'OUTFOX_SEARCH_USER_ID_NCOO', value: '123456789' })).toBe(false);
+    expect(isLoginCookie({ name: 'JSESSIONID', value: 'abc123session' })).toBe(false);
+    expect(isLoginCookie({ name: 'yd_tm_task', value: 'task_001' })).toBe(false);
+    expect(isLoginCookie({ name: '___rl__test__cookies', value: '1730000000' })).toBe(false);
+    expect(isLoginCookie({ name: 'i18n_redirected', value: 'zh' })).toBe(false);
+
+    // Verified session cookies must be recognized as login
+    expect(isLoginCookie({ name: 'DICT_SESS', value: 'v2|sample-session-token' })).toBe(true);
+    expect(isLoginCookie({ name: 'YNOTE_SESS', value: 'sample-ynote-token' })).toBe(true);
+    expect(isLoginCookie({ name: 'OUTFOX_CNR_MEMBER_LOGIN', value: 'member-login-token' })).toBe(true);
+
+    // P_INFO NetEase passport cookie
+    expect(isLoginCookie({ name: 'P_INFO', value: 'testuser@163.com|1730000000|0|' })).toBe(true);
+    expect(isLoginCookie({ name: 'P_INFO', value: '||' })).toBe(false);
+    expect(isLoginCookie({ name: 'P_INFO', value: '' })).toBe(false);
+    expect(isLoginCookie(null)).toBe(false);
+  });
+
+  it('determines login status via server endpoint accurately', async () => {
+    const originalFetch = globalThis.fetch;
+
+    try {
+      // 1. Unauthenticated response from accountinfo (code: 2035)
+      globalThis.fetch = (async (url: any) => {
+        if (String(url).includes('accountinfo')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ msg: 'NO_LOGIN', code: 2035 }),
+            text: async () => JSON.stringify({ msg: 'NO_LOGIN', code: 2035 }),
+          };
+        }
+        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+      }) as any;
+
+      const unauthResult = await checkLoginServer();
+      expect(unauthResult.ok).toBe(false);
+      expect(unauthResult.loggedIn).toBe(false);
+      expect(unauthResult.needLogin).toBe(true);
+
+      // 2. Authenticated response from accountinfo (code: 0)
+      globalThis.fetch = (async (url: any) => {
+        if (String(url).includes('accountinfo')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ code: 0, userId: 'youdao_user_888' }),
+            text: async () => JSON.stringify({ code: 0, userId: 'youdao_user_888' }),
+          };
+        }
+        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+      }) as any;
+
+      const authResult = await checkLoginServer();
+      expect(authResult.ok).toBe(true);
+      expect(authResult.loggedIn).toBe(true);
+      expect(authResult.needLogin).toBe(false);
+      expect(authResult.userId).toBe('youdao_user_888');
+
+      // 3. Fallback when accountinfo fails but SSR page has unauthenticated markers
+      globalThis.fetch = (async (url: any) => {
+        if (String(url).includes('accountinfo')) {
+          return { ok: false, status: 500, text: async () => 'error', json: async () => ({}) };
+        }
+        if (String(url).includes('webwordbook/wordlist')) {
+          const anonymousSsrHtml = `
+            <!doctype html><html><body>
+            <a href="javascript:;" class="login">登录</a>
+            <script>window.__NUXT__=(function(a,b,c){return {state:{login:{yduserid:a,isLogin:b}}}}))("",false,"/");</script>
+            </body></html>
+          `;
+          return {
+            ok: true,
+            status: 200,
+            text: async () => anonymousSsrHtml,
+            json: async () => ({}),
+          };
+        }
+        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+      }) as any;
+
+      const fallbackResult = await checkLoginServer();
+      expect(fallbackResult.ok).toBe(false);
+      expect(fallbackResult.loggedIn).toBe(false);
+      expect(fallbackResult.needLogin).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
 
