@@ -23,25 +23,84 @@
   --yh-btn-hover-bg: rgba(0, 0, 0, 0.06);
   --yh-btn-active-bg: rgba(0, 0, 0, 0.12);
   --yh-btn-focus-ring: rgba(0, 0, 0, 0.25);
+  --yh-hl-line: #d97706;
+  --yh-hl-line-hover: rgba(217, 119, 6, 0.9);
+  --yh-hl-line-tint: rgba(217, 119, 6, 0.08);
 }
 
-/* ===== 高亮词 ===== */
+/* ===== 高亮词：默认（背景高亮） ===== */
 .yh-highlight {
   background-color: var(--yh-hl-bg);
   color: var(--yh-hl-fg);
   border-radius: 2px;
   padding: 0 1px;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color 0.15s, text-decoration-color 0.15s, border-color 0.15s;
 }
 
 .yh-highlight:hover {
   background-color: var(--yh-hl-bg-hover);
 }
 
+/* 直线下划线 */
+[data-yh-style="underline"] .yh-highlight {
+  background-color: transparent;
+  color: var(--yh-hl-fg, inherit);
+  text-decoration: underline var(--yh-hl-line) 2px;
+  text-underline-offset: 3px;
+  border-radius: 2px;
+}
+[data-yh-style="underline"] .yh-highlight:hover {
+  background-color: var(--yh-hl-line-tint);
+  text-decoration-color: var(--yh-hl-line-hover);
+}
+
+/* 波浪线 */
+[data-yh-style="wavy"] .yh-highlight {
+  background-color: transparent;
+  color: var(--yh-hl-fg, inherit);
+  text-decoration: underline wavy var(--yh-hl-line) 1.5px;
+  text-underline-offset: 3.5px;
+  border-radius: 2px;
+}
+[data-yh-style="wavy"] .yh-highlight:hover {
+  background-color: var(--yh-hl-line-tint);
+  text-decoration-color: var(--yh-hl-line-hover);
+}
+
+/* 虚线下划线 */
+[data-yh-style="dashed"] .yh-highlight {
+  background-color: transparent;
+  color: var(--yh-hl-fg, inherit);
+  text-decoration: underline dashed var(--yh-hl-line) 1.5px;
+  text-underline-offset: 3px;
+  border-radius: 2px;
+}
+[data-yh-style="dashed"] .yh-highlight:hover {
+  background-color: var(--yh-hl-line-tint);
+  text-decoration-color: var(--yh-hl-line-hover);
+}
+
+/* 圆角边框 */
+[data-yh-style="outline"] .yh-highlight {
+  background-color: transparent;
+  color: var(--yh-hl-fg, inherit);
+  border: 1.5px solid var(--yh-hl-line);
+  border-radius: 4px;
+  padding: 0 3px;
+  box-sizing: border-box;
+}
+[data-yh-style="outline"] .yh-highlight:hover {
+  background-color: var(--yh-hl-line-tint);
+  border-color: var(--yh-hl-line-hover);
+}
+
 /* 已删除的高亮 */
-.yh-highlight-deleted {
+.yh-highlight-deleted,
+[data-yh-style] .yh-highlight-deleted {
   background: transparent !important;
+  text-decoration: none !important;
+  border: none !important;
   cursor: default;
 }
 

@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ttsToggle: true,
   highlightBackground: '#ffe464',
   highlightText: '',
+  highlightStyle: 'bg',
   bubbleBackground: '#ffffff',
   bubbleText: '',
   syncTime: 0,
@@ -154,4 +155,38 @@ export function hexToRgba(hex: string, alpha: number): string {
   const g = parseInt(clean.slice(2, 4), 16) || 0;
   const b = parseInt(clean.slice(4, 6), 16) || 0;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
+ * 为下划线、波浪线、虚线和边框生成高对比度线条颜色。
+ * 针对浅黄色等高明度预设，自动适配为饱满清晰的深色线，避免在浅色网页上看不清。
+ */
+export function toLineColor(color: string): string {
+  const hex = toHex6(color).toLowerCase();
+  const presetLineMap: Record<string, string> = {
+    '#ffe464': '#d97706', // 琥珀黄
+    '#9be4a4': '#16a34a', // 翠绿
+    '#f69ba4': '#e11d48', // 玫红
+    '#80b6f6': '#2563eb', // 蔚蓝
+    '#ffbe72': '#ea580c', // 暖橙
+    '#c2a3f7': '#9333ea', // 罗兰紫
+    '#969aa0': '#4b5563', // 石板灰
+  };
+  if (presetLineMap[hex]) return presetLineMap[hex];
+
+  // 针对自定义颜色：计算亮度，过亮时自动调深 30% 以确保下划线可读
+  const clean = hex.startsWith('#') ? hex.slice(1) : hex;
+  const r = parseInt(clean.slice(0, 2), 16) || 0;
+  const g = parseInt(clean.slice(2, 4), 16) || 0;
+  const b = parseInt(clean.slice(4, 6), 16) || 0;
+  const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+  if (lum > 165) {
+    const factor = 0.65;
+    const dr = Math.round(r * factor);
+    const dg = Math.round(g * factor);
+    const db = Math.round(b * factor);
+    const h = (n: number) => n.toString(16).padStart(2, '0');
+    return `#${h(dr)}${h(dg)}${h(db)}`;
+  }
+  return hex;
 }

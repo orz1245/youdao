@@ -184,6 +184,27 @@
     <!-- 高亮配色 -->
     <section class="card">
       <div class="card-title">{{ t('cardHighlight', '高亮') }}</div>
+
+      <!-- 样式选择 -->
+      <div class="section-subtitle">{{ t('labelHighlightStyle', '高亮样式') }}</div>
+      <div class="style-selector" role="radiogroup" :aria-label="t('labelHighlightStyle', '高亮样式')">
+        <button
+          v-for="opt in styleOptions"
+          :key="opt.id"
+          type="button"
+          class="style-chip"
+          :class="{ active: highlightStyle === opt.id }"
+          :aria-checked="highlightStyle === opt.id"
+          role="radio"
+          @click="updateHighlightStyle(opt.id)"
+        >
+          <span class="style-chip-preview" :class="'style-chip--' + opt.id">Aa</span>
+          <span class="style-chip-text">{{ t(opt.labelKey, opt.defaultLabel) }}</span>
+        </button>
+      </div>
+
+      <!-- 颜色预设 -->
+      <div class="section-subtitle">{{ t('labelBg', '背景') }}</div>
       <div class="color-presets">
         <button
           v-for="p in presets"
@@ -195,21 +216,41 @@
           @click="applyPreset(p)"
         ></button>
       </div>
+
+      <!-- 自定义颜色 -->
       <div class="custom-row">
-        <span class="custom-label">{{ t('labelBg', '背景') }}</span>
-        <input
-          v-model="highlightBg"
-          type="color"
-          class="color-picker"
-          @input="handleCustomBg"
-        />
-        <span class="custom-label">{{ t('labelText', '文字') }}</span>
-        <input
-          v-model="highlightText"
-          type="color"
-          class="color-picker"
-          @input="handleCustomText"
-        />
+        <div class="custom-color-item">
+          <span class="custom-label">{{ t('labelBg', '背景') }}</span>
+          <div class="color-picker-wrapper" :style="{ backgroundColor: highlightBg }">
+            <input
+              v-model="highlightBg"
+              type="color"
+              class="color-picker"
+              @input="handleCustomBg"
+            />
+          </div>
+        </div>
+        <div class="custom-color-item">
+          <span class="custom-label">{{ t('labelText', '文字') }}</span>
+          <div class="color-picker-wrapper" :style="{ backgroundColor: highlightText || '#333333' }">
+            <input
+              v-model="highlightText"
+              type="color"
+              class="color-picker"
+              @input="handleCustomText"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 实时预览卡片 -->
+      <div class="preview-card">
+        <div class="preview-badge">{{ t('previewTitle', '效果预览') }}</div>
+        <div class="preview-text">
+          <span>{{ previewSentenceParts[0] }}</span>
+          <span class="preview-target-word" :style="previewWordStyle">{{ t('previewWord', 'vocabulary') }}</span>
+          <span>{{ previewSentenceParts[1] }}</span>
+        </div>
       </div>
     </section>
 
@@ -277,12 +318,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { computed, ref, onMounted, reactive } from 'vue';
 import { useI18n } from '../../utils/i18n';
-import { toHex6, isExtAlive } from '../../utils/storage';
+import { toHex6, hexToRgba, toLineColor, isExtAlive } from '../../utils/storage';
 import { getVoicesCached, isGoogleVoice, isEnglishVoice, voiceOrder } from '../../utils/voice';
 import type { TtsVoiceLike } from '../../utils/voice';
-import type { Settings, WordbookData, CheckLoginResponse } from '../../types';
+import type { Settings, WordbookData, CheckLoginResponse, HighlightStyle } from '../../types';
 
 const { t, setLanguage } = useI18n();
 
@@ -307,8 +348,74 @@ const voices = ref<TtsVoiceLike[]>([]);
 
 const highlightBg = ref('#ffe464');
 const highlightText = ref('#000000');
+const highlightStyle = ref<HighlightStyle>('bg');
 const activePresetBg = ref('#ffe464');
 const uiLang = ref<'auto' | 'zh_CN' | 'en'>('auto');
+
+const styleOptions: Array<{ id: HighlightStyle; labelKey: string; defaultLabel: string }> = [
+  { id: 'bg', labelKey: 'styleBg', defaultLabel: '背景' },
+  { id: 'underline', labelKey: 'styleUnderline', defaultLabel: '下划线' },
+  { id: 'wavy', labelKey: 'styleWavy', defaultLabel: '波浪线' },
+  { id: 'dashed', labelKey: 'styleDashed', defaultLabel: '虚线' },
+  { id: 'outline', labelKey: 'styleOutline', defaultLabel: '边框' },
+];
+
+function updateHighlightStyle(style: HighlightStyle) {
+  highlightStyle.value = style;
+  chrome.storage.local.set({ highlightStyle: style }, notifyActiveContent);
+}
+
+const previewSentenceParts = computed(() => {
+  const sentence = t('previewSentence', '坚持积累生词 $1 提升英语阅读效率。');
+  const parts = sentence.split('$1');
+  return [parts[0] || '', parts[1] || ''];
+});
+
+const previewWordStyle = computed(() => {
+  const bg = highlightBg.value || '#ffe464';
+  const lineCol = toLineColor(bg);
+  const fg = highlightText.value || 'inherit';
+
+  switch (highlightStyle.value) {
+    case 'underline':
+      return {
+        color: fg,
+        textDecoration: `underline ${lineCol} 2px`,
+        textUnderlineOffset: '3px',
+        backgroundColor: 'transparent',
+      };
+    case 'wavy':
+      return {
+        color: fg,
+        textDecoration: `underline wavy ${lineCol} 1.5px`,
+        textUnderlineOffset: '3.5px',
+        backgroundColor: 'transparent',
+      };
+    case 'dashed':
+      return {
+        color: fg,
+        textDecoration: `underline dashed ${lineCol} 1.5px`,
+        textUnderlineOffset: '3px',
+        backgroundColor: 'transparent',
+      };
+    case 'outline':
+      return {
+        color: fg,
+        border: `1.5px solid ${lineCol}`,
+        borderRadius: '4px',
+        padding: '1px 5px',
+        backgroundColor: 'transparent',
+      };
+    case 'bg':
+    default:
+      return {
+        backgroundColor: hexToRgba(bg, 0.55),
+        color: fg,
+        borderRadius: '3px',
+        padding: '1px 5px',
+      };
+  }
+});
 
 const presets = [
   { bg: '#ffe464', text: '', titleKey: 'presetYellow', fallbackTitle: '黄' },
@@ -561,7 +668,7 @@ onMounted(() => {
   chrome.storage.local.get(
     [
       'toggle', 'ttsToggle', 'autoSync', 'newWords', 'loggedIn', 'userLoggedOut',
-      'highlightBackground', 'highlightText', 'uiLang', 'ttsVoice'
+      'highlightBackground', 'highlightText', 'highlightStyle', 'uiLang', 'ttsVoice'
     ],
     (result: any) => {
       if (result.uiLang) {
@@ -571,6 +678,10 @@ onMounted(() => {
       toggle.value = result.toggle !== false;
       ttsToggle.value = result.ttsToggle !== false;
       autoSync.value = result.autoSync !== false;
+
+      if (result.highlightStyle) {
+        highlightStyle.value = result.highlightStyle;
+      }
 
       const savedBg = toHex6(result.highlightBackground || '#ffe464');
       highlightBg.value = savedBg;

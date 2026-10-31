@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { WordMatcher, normalizePossessive } from '../utils/word-matcher';
-import { toHex6, hexToRgba, cacheEntry } from '../utils/storage';
+import { toHex6, hexToRgba, cacheEntry, toLineColor } from '../utils/storage';
 import { isGoogleVoice, isEnglishVoice, resolveVoice, voiceOrder } from '../utils/voice';
 import { t, setLanguage, resolveEffectiveLocale } from '../utils/i18n';
 import { detectLan, interpretYoudao, extractFromNuxt } from '../utils/youdao-api';
@@ -51,6 +51,21 @@ describe('Storage and Color Utilities', () => {
     expect(hexToRgba('#ffe464', 0.55)).toBe('rgba(255, 228, 100, 0.55)');
   });
 
+  it('maps background presets and custom colors to high-contrast line colors', () => {
+    expect(toLineColor('#ffe464')).toBe('#d97706');
+    expect(toLineColor('#9be4a4')).toBe('#16a34a');
+    expect(toLineColor('#f69ba4')).toBe('#e11d48');
+    expect(toLineColor('#80b6f6')).toBe('#2563eb');
+    expect(toLineColor('#ffbe72')).toBe('#ea580c');
+    expect(toLineColor('#c2a3f7')).toBe('#9333ea');
+    expect(toLineColor('#969aa0')).toBe('#4b5563');
+
+    // 过亮自定义颜色自动调暗保证可读性
+    expect(toLineColor('#ffffff')).toBe('#a6a6a6');
+    // 深色自定义颜色保持原色
+    expect(toLineColor('#1e293b')).toBe('#1e293b');
+  });
+
   it('parses cache entries correctly', () => {
     expect(cacheEntry('definition')).toEqual({ trans: 'definition', at: 0 });
     expect(cacheEntry({ trans: 'meaning', at: 12345 })).toEqual({ trans: 'meaning', at: 12345 });
@@ -89,6 +104,22 @@ describe('i18n Utilities', () => {
 
     setLanguage('en');
     expect(t('addOk', 'Added', ['test'])).toBe('Added “test” to your wordbook');
+  });
+
+  it('translates highlight styles correctly', () => {
+    setLanguage('zh_CN');
+    expect(t('styleBg')).toBe('背景高亮');
+    expect(t('styleUnderline')).toBe('下划线');
+    expect(t('styleWavy')).toBe('波浪线');
+    expect(t('styleDashed')).toBe('虚线');
+    expect(t('styleOutline')).toBe('圆角边框');
+
+    setLanguage('en');
+    expect(t('styleBg')).toBe('Background');
+    expect(t('styleUnderline')).toBe('Underline');
+    expect(t('styleWavy')).toBe('Wavy');
+    expect(t('styleDashed')).toBe('Dashed');
+    expect(t('styleOutline')).toBe('Outline');
   });
 });
 

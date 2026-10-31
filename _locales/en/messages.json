@@ -111,6 +111,42 @@
     "message": "Text",
     "description": "自定义高亮文字色标签"
   },
+  "labelHighlightStyle": {
+    "message": "Style",
+    "description": "Highlight style selector"
+  },
+  "styleBg": {
+    "message": "Background",
+    "description": "Highlight style: background"
+  },
+  "styleUnderline": {
+    "message": "Underline",
+    "description": "Highlight style: underline"
+  },
+  "styleWavy": {
+    "message": "Wavy",
+    "description": "Highlight style: wavy"
+  },
+  "styleDashed": {
+    "message": "Dashed",
+    "description": "Highlight style: dashed"
+  },
+  "styleOutline": {
+    "message": "Outline",
+    "description": "Highlight style: outline"
+  },
+  "previewTitle": {
+    "message": "Preview",
+    "description": "Highlight preview card title"
+  },
+  "previewSentence": {
+    "message": "Expanding $1 will boost your reading efficiency.",
+    "description": "Preview sample sentence"
+  },
+  "previewWord": {
+    "message": "vocabulary",
+    "description": "Preview sample word"
+  },
   "btnReset": {
     "message": "Reset",
     "description": "恢复默认设置按钮"

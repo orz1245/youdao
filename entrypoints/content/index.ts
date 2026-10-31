@@ -1,6 +1,6 @@
 import './style.css';
 import { WordMatcher, normalizePossessive } from '../../utils/word-matcher';
-import { hexToRgba, isExtAlive, safeStorageGet } from '../../utils/storage';
+import { hexToRgba, isExtAlive, safeStorageGet, toLineColor } from '../../utils/storage';
 import { t, setLanguage } from '../../utils/i18n';
 import type { WordInfo, Settings, MessageRequest } from '../../types';
 
@@ -101,6 +101,9 @@ export default defineContentScript({
       if (!root) return;
       s = s || {};
 
+      const style = s.highlightStyle || 'bg';
+      root.setAttribute('data-yh-style', style);
+
       const setOrClear = (name: string, value?: string, defaultValue?: string) => {
         if (!value || value === defaultValue) root.style.removeProperty(name);
         else root.style.setProperty(name, value);
@@ -114,6 +117,11 @@ export default defineContentScript({
         root.style.setProperty('--yh-hl-bg', hexToRgba(hlBg, 0.55));
         root.style.setProperty('--yh-hl-bg-hover', hexToRgba(hlBg, 0.78));
       }
+
+      const lineColor = toLineColor(hlBg);
+      root.style.setProperty('--yh-hl-line', lineColor);
+      root.style.setProperty('--yh-hl-line-hover', hexToRgba(lineColor, 0.9));
+      root.style.setProperty('--yh-hl-line-tint', hexToRgba(lineColor, 0.08));
 
       setOrClear('--yh-hl-fg', s.highlightText, '');
       setOrClear('--yh-bubble-bg', s.bubbleBackground, '#ffffff');
@@ -1342,8 +1350,8 @@ export default defineContentScript({
         }
       }
 
-      if (changes.highlightBackground || changes.highlightText || changes.bubbleBackground || changes.bubbleText) {
-        safeStorageGet(['highlightBackground', 'highlightText', 'bubbleBackground', 'bubbleText'], applyStyles);
+      if (changes.highlightBackground || changes.highlightText || changes.highlightStyle || changes.bubbleBackground || changes.bubbleText) {
+        safeStorageGet(['highlightBackground', 'highlightText', 'highlightStyle', 'bubbleBackground', 'bubbleText'], applyStyles);
       }
     });
 
@@ -1357,7 +1365,7 @@ export default defineContentScript({
       }
       if (msg.type === 'settingsChanged') {
         safeStorageGet(
-          ['toggle', 'highlightBackground', 'highlightText', 'bubbleBackground', 'bubbleText', 'ttsToggle'],
+          ['toggle', 'highlightBackground', 'highlightText', 'highlightStyle', 'bubbleBackground', 'bubbleText', 'ttsToggle'],
           (r) => {
             settings = r;
             applyStyles(r);
@@ -1374,7 +1382,7 @@ export default defineContentScript({
     // ===== 初始化入口 =====
     safeStorageGet(
       [
-        'toggle', 'newWords', 'highlightBackground', 'highlightText',
+        'toggle', 'newWords', 'highlightBackground', 'highlightText', 'highlightStyle',
         'bubbleBackground', 'bubbleText', 'ttsToggle', 'loggedIn', 'userLoggedOut', 'debugLog', 'uiLang'
       ],
       (result) => {

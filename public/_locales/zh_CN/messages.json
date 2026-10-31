@@ -111,6 +111,42 @@
     "message": "文字",
     "description": "自定义高亮文字色标签"
   },
+  "labelHighlightStyle": {
+    "message": "高亮样式",
+    "description": "高亮样式类型选择"
+  },
+  "styleBg": {
+    "message": "背景高亮",
+    "description": "高亮样式：背景色"
+  },
+  "styleUnderline": {
+    "message": "下划线",
+    "description": "高亮样式：下划线"
+  },
+  "styleWavy": {
+    "message": "波浪线",
+    "description": "高亮样式：波浪线"
+  },
+  "styleDashed": {
+    "message": "虚线",
+    "description": "高亮样式：虚线"
+  },
+  "styleOutline": {
+    "message": "圆角边框",
+    "description": "高亮样式：圆角边框"
+  },
+  "previewTitle": {
+    "message": "效果预览",
+    "description": "高亮样式实时预览卡片标题"
+  },
+  "previewSentence": {
+    "message": "坚持积累生词 $1 提升英语阅读效率。",
+    "description": "高亮预览示范语句"
+  },
+  "previewWord": {
+    "message": "vocabulary",
+    "description": "高亮预览单词"
+  },
   "btnReset": {
     "message": "恢复默认",
     "description": "恢复默认设置按钮"

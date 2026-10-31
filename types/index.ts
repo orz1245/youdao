@@ -14,11 +14,14 @@ export interface WordCacheEntry {
   at: number;
 }
 
+export type HighlightStyle = 'bg' | 'underline' | 'wavy' | 'dashed' | 'outline';
+
 export interface Settings {
   toggle: boolean;
   ttsToggle: boolean;
   highlightBackground: string;
   highlightText: string;
+  highlightStyle?: HighlightStyle;
   bubbleBackground: string;
   bubbleText: string;
   syncTime: number;
