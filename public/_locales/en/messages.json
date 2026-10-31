@@ -107,6 +107,14 @@
     "message": "Background",
     "description": "自定义高亮背景色标签"
   },
+  "labelLine": {
+    "message": "Line",
+    "description": "自定义高亮线条色标签"
+  },
+  "labelBorder": {
+    "message": "Border",
+    "description": "自定义高亮边框色标签"
+  },
   "labelText": {
     "message": "Text",
     "description": "自定义高亮文字色标签"

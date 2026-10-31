@@ -205,7 +205,7 @@
       </div>
 
       <!-- 颜色预设 -->
-      <div class="section-subtitle">{{ t('labelBg', '背景') }}</div>
+      <div class="section-subtitle">{{ activeColorLabel }}</div>
       <div class="color-presets">
         <button
           v-for="p in presets"
@@ -221,7 +221,7 @@
       <!-- 自定义颜色 -->
       <div class="custom-row">
         <div class="custom-color-item">
-          <span class="custom-label">{{ t('labelBg', '背景') }}</span>
+          <span class="custom-label">{{ activeColorLabel }}</span>
           <div class="color-picker-wrapper" :style="{ backgroundColor: highlightBg }">
             <input
               v-model="highlightBg"
@@ -365,6 +365,16 @@ function updateHighlightStyle(style: HighlightStyle) {
   highlightStyle.value = style;
   chrome.storage.local.set({ highlightStyle: style }, notifyActiveContent);
 }
+
+const activeColorLabel = computed(() => {
+  if (highlightStyle.value === 'outline') {
+    return t('labelBorder', '边框');
+  }
+  if (highlightStyle.value === 'underline' || highlightStyle.value === 'wavy' || highlightStyle.value === 'dashed') {
+    return t('labelLine', '线条');
+  }
+  return t('labelBg', '背景');
+});
 
 const previewSentenceParts = computed(() => {
   const sentence = t('previewSentence', '坚持积累生词 $1 提升英语阅读效率。');

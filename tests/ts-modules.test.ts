@@ -4,6 +4,7 @@ import { toHex6, hexToRgba, cacheEntry, toLineColor } from '../utils/storage';
 import { isGoogleVoice, isEnglishVoice, resolveVoice, voiceOrder } from '../utils/voice';
 import { t, setLanguage, resolveEffectiveLocale } from '../utils/i18n';
 import { detectLan, interpretYoudao, extractFromNuxt } from '../utils/youdao-api';
+import { isExcludedElement, isHighlightableTextNode } from '../utils/dom-filter';
 
 describe('WordMatcher (TypeScript)', () => {
   it('normalizes possessives correctly', () => {
@@ -149,5 +150,89 @@ describe('Youdao API Parsing', () => {
     expect(words.length).toBe(1);
     expect(words[0]?.word).toBe('abandon');
     expect(words[0]?.trans).toBe('v. 放弃');
+  });
+});
+
+describe('Main Content Filter (DOM Filter)', () => {
+  function createMockElement(opts: {
+    tag: string;
+    role?: string;
+    className?: string;
+    isContentEditable?: boolean;
+    parent?: any;
+    closestResult?: any;
+  }): any {
+    const classes = (opts.className || '').split(/\s+/).filter(Boolean);
+    const el: any = {
+      nodeType: 1,
+      tagName: opts.tag.toUpperCase(),
+      className: opts.className || '',
+      isContentEditable: !!opts.isContentEditable,
+      classList: {
+        contains: (cls: string) => classes.includes(cls),
+      },
+      getAttribute: (attr: string) => (attr === 'role' ? opts.role || null : null),
+      parentElement: opts.parent || null,
+      closest: (sel: string) => {
+        if (opts.closestResult !== undefined) return opts.closestResult;
+        if (opts.parent && opts.parent.closest) return opts.parent.closest(sel);
+        return null;
+      },
+    };
+    return el;
+  }
+
+  function createMockTextNode(text: string, parent: any): any {
+    return {
+      nodeType: 3,
+      textContent: text,
+      parentElement: parent,
+    };
+  }
+
+  it('excludes navigation, headers, footers, sidebars, buttons and code blocks', () => {
+    expect(isExcludedElement(createMockElement({ tag: 'nav' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'footer' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'aside' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'button' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'pre' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'code' }))).toBe(true);
+
+    // ARIA roles
+    expect(isExcludedElement(createMockElement({ tag: 'div', role: 'navigation' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'div', role: 'banner' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'div', role: 'contentinfo' }))).toBe(true);
+
+    // Class name patterns
+    expect(isExcludedElement(createMockElement({ tag: 'div', className: 'main-navbar' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'div', className: 'sidebar-widget' }))).toBe(true);
+    expect(isExcludedElement(createMockElement({ tag: 'div', className: 'ad-banner' }))).toBe(true);
+
+    // Content containers are NOT excluded
+    expect(isExcludedElement(createMockElement({ tag: 'article' }))).toBe(false);
+    expect(isExcludedElement(createMockElement({ tag: 'main' }))).toBe(false);
+    expect(isExcludedElement(createMockElement({ tag: 'p' }))).toBe(false);
+    expect(isExcludedElement(createMockElement({ tag: 'div', className: 'article-content' }))).toBe(false);
+  });
+
+  it('accepts body text paragraphs and rejects isolated UI strings', () => {
+    const pEl = createMockElement({ tag: 'p' });
+    const paragraphText = createMockTextNode('Consistent reading improves vocabulary comprehension.', pEl);
+    expect(isHighlightableTextNode(paragraphText)).toBe(true);
+
+    // Heading in content
+    const h2El = createMockElement({ tag: 'h2' });
+    const headingText = createMockTextNode('Chapter 1: Cognitive Resilience', h2El);
+    expect(isHighlightableTextNode(headingText)).toBe(true);
+
+    // Text in button or nav is rejected
+    const btnEl = createMockElement({ tag: 'button' });
+    const btnText = createMockTextNode('Submit word', btnEl);
+    expect(isHighlightableTextNode(btnText)).toBe(false);
+
+    // Isolated short UI string in a generic div (e.g. "Sign in") is rejected
+    const uiDiv = createMockElement({ tag: 'div' });
+    const uiText = createMockTextNode('Sign in', uiDiv);
+    expect(isHighlightableTextNode(uiText)).toBe(false);
   });
 });

@@ -1,6 +1,7 @@
 import './style.css';
 import { WordMatcher, normalizePossessive } from '../../utils/word-matcher';
 import { hexToRgba, isExtAlive, safeStorageGet, toLineColor } from '../../utils/storage';
+import { isExcludedElement, isHighlightableTextNode } from '../../utils/dom-filter';
 import { t, setLanguage } from '../../utils/i18n';
 import type { WordInfo, Settings, MessageRequest } from '../../types';
 
@@ -28,13 +29,6 @@ export default defineContentScript({
     }
 
     let lastMouse = { x: 0, y: 0 };
-
-    const VALID_TAGS = new Set([
-      'P', 'DIV', 'SPAN', 'A', 'LI', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-      'B', 'STRONG', 'I', 'EM', 'Q', 'CITE', 'CODE', 'PRE', 'BUTTON', 'ARTICLE',
-      'SECTION', 'MAIN', 'HEADER', 'FOOTER', 'NAV', 'ASIDE', 'FIGCAPTION', 'BLOCKQUOTE',
-      'LABEL', 'DT', 'DD',
-    ]);
 
     const BUBBLE_HIDE_DELAY = 260;
     const BUBBLE_HOLD_MS = 600;
@@ -183,23 +177,6 @@ export default defineContentScript({
       return result;
     }
 
-    function isHighlightableTextNode(node: Node | null): boolean {
-      if (!node || node.nodeType !== Node.TEXT_NODE) return false;
-      const parent = node.parentElement;
-      if (!parent) return false;
-      const tag = parent.tagName;
-      if (!tag || ['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION'].includes(tag)) {
-        return false;
-      }
-      if (
-        parent.isContentEditable ||
-        parent.closest('[role="textbox"], .yh-bubble, .yh-highlight, .yh-toast, .yh-confirm, .yh-login-banner')
-      ) {
-        return false;
-      }
-      return VALID_TAGS.has(tag);
-    }
-
     function highlightNodes(nodes: Node[]) {
       for (const node of nodes) {
         const text = node.textContent;
@@ -226,11 +203,24 @@ export default defineContentScript({
 
     function collectTextNodes(root: Node): Node[] {
       const nodes: Node[] = [];
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-        acceptNode: (node) => (isHighlightableTextNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+        acceptNode: (node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (isExcludedElement(node as Element)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_SKIP;
+          }
+          if (node.nodeType === Node.TEXT_NODE) {
+            return isHighlightableTextNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_REJECT;
+        },
       });
       let n: Node | null;
-      while ((n = walker.nextNode())) nodes.push(n);
+      while ((n = walker.nextNode())) {
+        if (n.nodeType === Node.TEXT_NODE) nodes.push(n);
+      }
       return nodes;
     }
 
@@ -308,6 +298,7 @@ export default defineContentScript({
             }
             if (node.nodeType !== Node.ELEMENT_NODE) continue;
             const el = node as HTMLElement;
+            if (isExcludedElement(el)) continue;
             if (
               el.classList &&
               (el.classList.contains('yh-bubble') ||
