@@ -380,7 +380,7 @@ body {
 .style-selector {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
+  gap: 4px;
   background: #f1f3f5;
   padding: 3px;
   border-radius: 8px;
@@ -388,11 +388,11 @@ body {
 }
 
 .style-chip {
+  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 5px 1px;
+  height: 36px;
   border: 1px solid transparent;
   background: transparent;
   border-radius: 6px;
@@ -404,7 +404,7 @@ body {
 
 .style-chip:hover {
   color: #0f172a;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .style-chip.active {
@@ -416,45 +416,117 @@ body {
 }
 
 .style-chip-preview {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.2;
-  margin-bottom: 2px;
+  line-height: 1;
   display: inline-block;
+  user-select: none;
 }
 
 .style-chip--bg {
   background: #fde047;
-  padding: 0 2px;
-  border-radius: 2px;
+  padding: 2px 4px;
+  border-radius: 3px;
   color: #1e293b;
 }
 
 .style-chip--underline {
   text-decoration: underline #d97706 2px;
-  text-underline-offset: 2px;
+  text-underline-offset: 2.5px;
 }
 
 .style-chip--wavy {
   text-decoration: underline wavy #d97706 1.5px;
-  text-underline-offset: 2.5px;
+  text-underline-offset: 3px;
 }
 
 .style-chip--dashed {
   text-decoration: underline dashed #d97706 1.5px;
-  text-underline-offset: 2px;
+  text-underline-offset: 2.5px;
 }
 
 .style-chip--outline {
   border: 1.5px solid #d97706;
-  border-radius: 3px;
-  padding: 0 2px;
+  border-radius: 4px;
+  padding: 1px 4px;
 }
 
-.style-chip-text {
-  font-size: 10px;
+/* 样式悬浮气泡 Tooltip */
+.style-chip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translate(-50%, 3px);
+  background: rgba(28, 28, 30, 0.96);
+  color: #fff;
+  font-size: 11px;
   line-height: 1.2;
+  padding: 4px 8px;
+  border-radius: 6px;
   white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  font-weight: normal;
+}
+
+.style-chip::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translate(-50%, 3px);
+  border: 4px solid transparent;
+  border-top-color: rgba(28, 28, 30, 0.96);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+  z-index: 20;
+}
+
+.style-chip:hover::after,
+.style-chip:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+/* 边缘芯片的 tooltip 微调，避免溢出卡片边缘 */
+.style-chip:first-child::after {
+  left: 0;
+  transform: translate(0, 3px);
+}
+.style-chip:first-child::before {
+  left: 18px;
+  transform: translate(-50%, 3px);
+}
+.style-chip:first-child:hover::after {
+  transform: translate(0, 0);
+}
+.style-chip:first-child:hover::before {
+  transform: translate(-50%, 0);
+}
+
+.style-chip:last-child::after {
+  left: auto;
+  right: 0;
+  transform: translate(0, 3px);
+}
+.style-chip:last-child::before {
+  left: auto;
+  right: 18px;
+  transform: translate(50%, 3px);
+}
+.style-chip:last-child:hover::after {
+  transform: translate(0, 0);
+}
+.style-chip:last-child:hover::before {
+  transform: translate(50%, 0);
 }
 
 /* 颜色预设：弹性等分正方形，7 个也能一行放下 */
@@ -795,6 +867,17 @@ body {
     background: #3a3a3c;
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .style-chip::after {
+    background: #1c1c1e;
+    color: #f4f4f5;
+    border: 1px solid #3f3f46;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .style-chip::before {
+    border-top-color: #3f3f46;
   }
 
   .color-picker-wrapper {

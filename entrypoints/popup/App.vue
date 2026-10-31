@@ -195,11 +195,12 @@
           class="style-chip"
           :class="{ active: highlightStyle === opt.id }"
           :aria-checked="highlightStyle === opt.id"
+          :data-tip="t(opt.labelKey, opt.defaultLabel)"
+          :aria-label="t(opt.labelKey, opt.defaultLabel)"
           role="radio"
           @click="updateHighlightStyle(opt.id)"
         >
           <span class="style-chip-preview" :class="'style-chip--' + opt.id">Aa</span>
-          <span class="style-chip-text">{{ t(opt.labelKey, opt.defaultLabel) }}</span>
         </button>
       </div>
 
@@ -353,11 +354,11 @@ const activePresetBg = ref('#ffe464');
 const uiLang = ref<'auto' | 'zh_CN' | 'en'>('auto');
 
 const styleOptions: Array<{ id: HighlightStyle; labelKey: string; defaultLabel: string }> = [
-  { id: 'bg', labelKey: 'styleBg', defaultLabel: '背景' },
+  { id: 'bg', labelKey: 'styleBg', defaultLabel: '背景高亮' },
   { id: 'underline', labelKey: 'styleUnderline', defaultLabel: '下划线' },
   { id: 'wavy', labelKey: 'styleWavy', defaultLabel: '波浪线' },
   { id: 'dashed', labelKey: 'styleDashed', defaultLabel: '虚线' },
-  { id: 'outline', labelKey: 'styleOutline', defaultLabel: '边框' },
+  { id: 'outline', labelKey: 'styleOutline', defaultLabel: '圆角边框' },
 ];
 
 function updateHighlightStyle(style: HighlightStyle) {
