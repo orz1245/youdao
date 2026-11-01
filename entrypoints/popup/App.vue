@@ -329,7 +329,7 @@ import type { Settings, WordbookData, CheckLoginResponse, HighlightStyle } from 
 
 const { t, setLanguage } = useI18n();
 
-const manifestVersion = ref('1.0.1');
+const manifestVersion = ref('1.0.2');
 try {
   const ver = chrome.runtime?.getManifest?.()?.version;
   if (ver) manifestVersion.value = ver;

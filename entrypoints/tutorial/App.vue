@@ -492,7 +492,7 @@ const { setLanguage, currentLocale } = useI18n();
 const lang = ref<'zh_CN' | 'en'>('zh_CN');
 const isZh = computed(() => lang.value === 'zh_CN');
 
-const version = ref('1.0.1');
+const version = ref('1.0.2');
 try {
   const ver = chrome.runtime?.getManifest?.()?.version;
   if (ver) version.value = ver;
