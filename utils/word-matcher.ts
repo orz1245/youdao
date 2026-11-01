@@ -21,6 +21,39 @@ export function normalizePossessive(word: string): string {
 }
 
 /**
+ * 校验字符串是否为合规的自然语言英语单词
+ * 1. 仅包含英文字母，允许合法的单词内连字符（well-known）和所有格/缩写撇号（don't, patient's）
+ * 2. 拒绝驼峰/帕斯卡代码命名（如 getElementById, useState, FooBar）
+ * 3. 拒绝包含下划线、数字、代码符号的字符串（如 user_id, win10, foo_bar）
+ * 4. 拒绝首尾带连字符/撇号或连续连字符的非法格式
+ * 5. 过滤掉长度 < 2 的单字符（避免文章中单个字母如 a/I 频繁误触发浮窗）
+ * 6. 允许全大写常规缩写（如 NASA, API）与首字母大写单词（如 Apple）经后续词典校验
+ */
+export function isLikelyEnglishWord(rawWord: string): boolean {
+  if (!rawWord || typeof rawWord !== 'string') return false;
+  const word = rawWord.trim();
+  if (word.length < 2 || word.length > 45) return false;
+
+  // 含有数字、下划线、中文/日文/韩文等非英文字符直接排除
+  if (/[0-9_]/.test(word)) return false;
+  if (/[\u3040-\u30ff\uac00-\ud7af\u4e00-\u9fff\u3400-\u4dbf]/.test(word)) return false;
+
+  // 首部不得为连字符或撇号；尾部不得为连字符；尾部若为撇号仅允许复数所有格（如 s'）
+  if (/^[-'\u2019]|-$/.test(word)) return false;
+  if (/['\u2019]$/.test(word) && !/s['\u2019]$/i.test(word)) return false;
+
+  // 不得有连续的连字符或撇号
+  if (/[-'\u2019]{2,}/.test(word)) return false;
+
+  // 排除驼峰与多词组合帕斯卡命名（小写字母后紧跟大写字母，如 getElement, isValid, FooBar）
+  if (/[a-z][A-Z]/.test(word)) return false;
+
+  // 基础字符集合：仅允许 ASCII 英文字母、拉丁拓展字母（如 café）、撇号和连字符
+  const validCharRe = /^[a-zA-Z\u00C0-\u024F][a-zA-Z\u00C0-\u024F'\u2019-]*$/;
+  return validCharRe.test(word);
+}
+
+/**
  * 可安全生成比较级/最高级的常见形容词。
  * 只收单音节，以及 -y / -le 结尾这类屈折规则明确的多音节形容词。
  */

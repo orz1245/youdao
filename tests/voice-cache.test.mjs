@@ -154,5 +154,19 @@ check('无本地英语嗓音可退时只尝试一次',
 
 remoteFails = false;
 
+// ===== 5. 非英语单词跳过发音 =====
+loadSW([GOOGLE_EN]);
+speakCalls = 0;
+await speak('clientWidth');
+await speak('12345');
+await speak('foo_bar');
+await speak('你好');
+await speak('a');
+check('非英语单词/代码标识符/单字母跳过发音（不触发 chrome.tts.speak）',
+  speakCalls === 0, '实际 speakCalls=' + speakCalls);
+
+await speak('highlight');
+check('合规英语单词正常发音', speakCalls === 1, '实际 speakCalls=' + speakCalls);
+
 console.log(`\n=== 语音表缓存测试: ${pass} 通过, ${failed} 失败 ===`);
 process.exit(failed ? 1 : 0);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WordMatcher, normalizePossessive } from '../utils/word-matcher';
+import { WordMatcher, normalizePossessive, isLikelyEnglishWord } from '../utils/word-matcher';
 import { toHex6, hexToRgba, cacheEntry, toLineColor } from '../utils/storage';
 import { isGoogleVoice, isEnglishVoice, resolveVoice, voiceOrder } from '../utils/voice';
 import { t, setLanguage, resolveEffectiveLocale } from '../utils/i18n';
@@ -20,6 +20,51 @@ describe('WordMatcher (TypeScript)', () => {
     expect(normalizePossessive('patients’')).toBe('patients');
     expect(normalizePossessive("children's")).toBe('children');
     expect(normalizePossessive("don't")).toBe("don't");
+  });
+
+  it('validates natural English words and rejects non-English identifiers', () => {
+    // Valid natural English words
+    expect(isLikelyEnglishWord('apple')).toBe(true);
+    expect(isLikelyEnglishWord('abandon')).toBe(true);
+    expect(isLikelyEnglishWord('Apple')).toBe(true);
+    expect(isLikelyEnglishWord('well-known')).toBe(true);
+    expect(isLikelyEnglishWord('mother-in-law')).toBe(true);
+    expect(isLikelyEnglishWord("don't")).toBe(true);
+    expect(isLikelyEnglishWord("patient's")).toBe(true);
+    expect(isLikelyEnglishWord('patients’')).toBe(true);
+    expect(isLikelyEnglishWord('NASA')).toBe(true);
+    expect(isLikelyEnglishWord('API')).toBe(true);
+    expect(isLikelyEnglishWord('café')).toBe(true);
+
+    // Invalid: CamelCase / PascalCase identifiers
+    expect(isLikelyEnglishWord('clientWidth')).toBe(false);
+    expect(isLikelyEnglishWord('handleSubmit')).toBe(false);
+    expect(isLikelyEnglishWord('getElementById')).toBe(false);
+    expect(isLikelyEnglishWord('FooBar')).toBe(false);
+    expect(isLikelyEnglishWord('iPhone')).toBe(false);
+
+    // Invalid: numbers, underscores, and code identifiers
+    expect(isLikelyEnglishWord('user_id')).toBe(false);
+    expect(isLikelyEnglishWord('foo_bar')).toBe(false);
+    expect(isLikelyEnglishWord('win10')).toBe(false);
+    expect(isLikelyEnglishWord('mp3')).toBe(false);
+    expect(isLikelyEnglishWord('12345')).toBe(false);
+    expect(isLikelyEnglishWord('v1.0.2')).toBe(false);
+
+    // Invalid: single letters, punctuation issues
+    expect(isLikelyEnglishWord('a')).toBe(false);
+    expect(isLikelyEnglishWord('I')).toBe(false);
+    expect(isLikelyEnglishWord('-flag')).toBe(false);
+    expect(isLikelyEnglishWord('test-')).toBe(false);
+    expect(isLikelyEnglishWord("'hello")).toBe(false);
+    expect(isLikelyEnglishWord('well--known')).toBe(false);
+
+    // Invalid: non-English scripts
+    expect(isLikelyEnglishWord('你好')).toBe(false);
+    expect(isLikelyEnglishWord('こんにちは')).toBe(false);
+    expect(isLikelyEnglishWord('안녕하세요')).toBe(false);
+    expect(isLikelyEnglishWord('')).toBe(false);
+    expect(isLikelyEnglishWord(null as any)).toBe(false);
   });
 
   it('generates grammatical variants and indexes canonical words', () => {

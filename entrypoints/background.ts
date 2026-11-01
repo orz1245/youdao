@@ -11,6 +11,7 @@ import {
   logDebug,
 } from '../utils/youdao-api';
 import { speakWord } from '../utils/voice';
+import { isLikelyEnglishWord } from '../utils/word-matcher';
 import { t } from '../utils/i18n';
 import type { MessageRequest, Settings } from '../types';
 
@@ -135,7 +136,7 @@ export default defineBackground(() => {
     // 1. TTS 发音
     if (request.type === 'tts') {
       chrome.storage.local.get(['ttsToggle'], (r) => {
-        if ((r.ttsToggle !== false || request.force) && request.word) {
+        if ((r.ttsToggle !== false || request.force) && request.word && isLikelyEnglishWord(request.word)) {
           speakWord(request.word);
         }
       });

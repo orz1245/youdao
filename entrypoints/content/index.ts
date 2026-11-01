@@ -1,5 +1,5 @@
 import './style.css';
-import { WordMatcher, normalizePossessive } from '../../utils/word-matcher';
+import { WordMatcher, normalizePossessive, isLikelyEnglishWord } from '../../utils/word-matcher';
 import { hexToRgba, isExtAlive, safeStorageGet, toLineColor } from '../../utils/storage';
 import { isExcludedElement, isHighlightableTextNode } from '../../utils/dom-filter';
 import { t, setLanguage } from '../../utils/i18n';
@@ -672,9 +672,16 @@ export default defineContentScript({
 
       const w = getWordAtPoint(x, y);
       if (w && WORD_PICK_RE.test(w.word)) {
+        const word = normalizePossessive(w.word);
+        if (!isLikelyEnglishWord(word)) {
+          cancelHover();
+          cancelTts();
+          lastSpokenWord = null;
+          scheduleHideBubble();
+          return;
+        }
         cancelHideBubble();
         currHighlightNode = null;
-        const word = normalizePossessive(w.word);
         if (hoverTimer) clearTimeout(hoverTimer);
         hoverTimer = setTimeout(() => {
           showUnhighlightBubble(word, w);
@@ -696,8 +703,10 @@ export default defineContentScript({
       const w = getWordAtPoint(x, y);
       if (!w || !WORD_PICK_RE.test(w.word)) return;
       if (isBubbleShown()) return;
+      const word = normalizePossessive(w.word);
+      if (!isLikelyEnglishWord(word)) return;
       currHighlightNode = null;
-      showUnhighlightBubble(normalizePossessive(w.word), w);
+      showUnhighlightBubble(word, w);
     }
 
     function cancelHover() {
@@ -735,7 +744,7 @@ export default defineContentScript({
 
       positionBubble(hl);
       const sw = info.word || canonical;
-      if (sw) speakWord(sw);
+      if (sw && isLikelyEnglishWord(sw)) speakWord(sw);
     }
 
     function positionBubble(hl: HTMLElement) {
@@ -942,14 +951,11 @@ export default defineContentScript({
       return null;
     }
 
-    function showUnhighlightBubble(word: string, w: { node: Node; start: number; end: number }) {
-      if (!checkExtAlive()) return;
-      const base = normalizePossessive(word);
-      const canonical = wordMatcher.lookup(base);
+    function displayUnhighlightBubble(base: string, trans: string, w: { node: Node; start: number; end: number }) {
+      if (!bubbleEl) return;
       bubbleWord = base;
       bubbleAction = 'add';
 
-      if (!bubbleEl) return;
       const wordText = bubbleEl.querySelector('.yh-bubble-word-text');
       const phoneticText = bubbleEl.querySelector('.yh-bubble-phonetic');
       if (wordText) wordText.textContent = base;
@@ -957,42 +963,44 @@ export default defineContentScript({
       setActionButton(loggedIn ? 'add' : 'none');
 
       const transEl = bubbleEl.querySelector('.yh-bubble-trans') as HTMLElement;
-      if (transEl) {
-        transEl.textContent = '';
-        const loading = document.createElement('span');
-        loading.className = 'yh-bubble-loading';
-        loading.textContent = t('bubbleLoading', '查询中…');
-        transEl.appendChild(loading);
-      }
+      renderTrans(transEl, trans);
 
       positionBubbleRect(getWordRect(w), lastMouse);
       speakWord(base);
+    }
 
-      if (canonical && wordInfos[canonical]) {
+    function showUnhighlightBubble(word: string, w: { node: Node; start: number; end: number }) {
+      if (!checkExtAlive()) return;
+      const base = normalizePossessive(word);
+      if (!isLikelyEnglishWord(base)) return;
+
+      const canonical = wordMatcher.lookup(base);
+      const key = base.toLowerCase();
+
+      // 已在生词本（含变体匹配）：直接展示释义
+      if (canonical && wordInfos[canonical] && wordInfos[canonical].trans) {
+        displayUnhighlightBubble(base, wordInfos[canonical].trans, w);
         setActionButton('none');
-        renderTrans(transEl, wordInfos[canonical].trans || '');
         return;
       }
 
-      const key = base.toLowerCase();
+      // 已有缓存释义：直接展示
       if (wordInfos[key] && wordInfos[key].trans) {
-        renderTrans(transEl, wordInfos[key].trans);
+        displayUnhighlightBubble(base, wordInfos[key].trans, w);
         return;
       }
       if (lookupTried.has(key)) {
-        renderTrans(transEl, '');
         return;
       }
 
       safeSendMessage({ type: 'lookup', word: base }, (res) => {
         lookupTried.add(key);
-        if (!res) return;
-        const trans = (res && res.ok && res.trans) || '';
-        if (trans) wordInfos[key] = { word: base, phonetic: '', trans };
-        if (bubbleWord !== base) return;
-        if (!bubbleEl || bubbleEl.style.display === 'none') return;
-        renderTrans(transEl, trans);
-        positionBubbleRect(getWordRect(w), lastMouse);
+        if (!res || !res.ok) return;
+        const trans = (res && res.trans) ? String(res.trans).trim() : '';
+        if (!trans) return; // 查无释义，静默忽略，不弹窗不发音
+        wordInfos[key] = { word: base, phonetic: '', trans };
+        if (!checkExtAlive()) return;
+        displayUnhighlightBubble(base, trans, w);
       });
     }
 
@@ -1012,6 +1020,7 @@ export default defineContentScript({
         console.warn('[YH] 发音按钮：未取到当前单词');
         return;
       }
+      if (!isLikelyEnglishWord(word)) return;
       logDebug('发音按钮点击:', word);
       safeSendMessage({ type: 'tts', word, force: true });
     }
@@ -1019,6 +1028,7 @@ export default defineContentScript({
     function speakWord(word: string) {
       if (settings.ttsToggle === false) return;
       if (!word || word === lastSpokenWord) return;
+      if (!isLikelyEnglishWord(word)) return;
       lastSpokenWord = word;
       safeSendMessage({ type: 'tts', word });
     }

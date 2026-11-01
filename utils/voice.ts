@@ -1,4 +1,5 @@
 import { isExtAlive } from './storage';
+import { isLikelyEnglishWord } from './word-matcher';
 
 export interface TtsVoiceLike {
   voiceName?: string;
@@ -98,6 +99,10 @@ export function getVoicesCached(): Promise<chrome.tts.TtsVoice[]> {
 }
 
 export async function speakWord(word: string, opts?: { localOnly?: boolean }): Promise<void> {
+  const cleanWord = String(word || '').trim();
+  if (!cleanWord || !isLikelyEnglishWord(cleanWord)) {
+    return;
+  }
   if (!isExtAlive() || !chrome.tts || !chrome.tts.speak || !chrome.tts.getVoices) {
     console.error('[YH] chrome.tts 不可用：缺少 tts 权限');
     return;

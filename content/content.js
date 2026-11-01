@@ -861,11 +861,15 @@
 
     const w = getWordAtPoint(x, y);
     if (w && WORD_PICK_RE.test(w.word)) {
-      cancelHideBubble();
-      currHighlightNode = null;   // 未高亮词：删除按钮不可用
-
       // 归一词形：所有格撇号去除（patients' → patients，patient's → patient）
       const word = WordMatcher.normalizePossessive(w.word);
+      const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+      if (isLikelyEnglish && !isLikelyEnglish(word)) {
+        cancelHover(); cancelTts(); lastSpokenWord = null; scheduleHideBubble();
+        return;
+      }
+      cancelHideBubble();
+      currHighlightNode = null;   // 未高亮词：删除按钮不可用
       clearTimeout(hoverTimer);
       hoverTimer = setTimeout(() => { showUnhighlightBubble(word, w); }, BUBBLE_HOLD_MS);
       return;
@@ -891,7 +895,10 @@
     // 等待期间浮层已被别的词占用 → 让位，交给后续 mousemove 处理
     if (isBubbleShown()) return;
     currHighlightNode = null;
-    showUnhighlightBubble(WordMatcher.normalizePossessive(w.word), w);
+    const word = WordMatcher.normalizePossessive(w.word);
+    const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+    if (isLikelyEnglish && !isLikelyEnglish(word)) return;
+    showUnhighlightBubble(word, w);
   }
 
   function cancelHover() {
@@ -931,7 +938,8 @@
 
     // 与气泡同时出现：悬浮满 600ms 后才发音（不再悬浮即发音）
     const sw = info.word || canonical;
-    if (sw) speakWord(sw);
+    const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+    if (sw && (!isLikelyEnglish || isLikelyEnglish(sw))) speakWord(sw);
   }
 
   /**
@@ -1167,16 +1175,8 @@
     return null;
   }
 
-  /**
-   * 未高亮单词的释义浮层：现查有道释义，并给「加入生词本」按钮。
-   * 与高亮词浮层共用同一 bubbleEl，区别在动作按钮（add 而非 delete）。
-   */
-  function showUnhighlightBubble(word, w) {
-    if (!isExtAlive()) return;   // 定时器可能在扩展重载之后才到期
-    // 归一词形：去除所有格撇号（patients' → patients，patient's → patient），
-    // 再走变体匹配（patients → patient）。「加入生词本」只写入归一化词形。
-    const base = WordMatcher.normalizePossessive(word);
-    const canonical = wordMatcher.lookup(base);
+  function displayUnhighlightBubble(base, trans, w) {
+    if (!bubbleEl) return;
     bubbleWord = base;
     bubbleAction = 'add';
     bubbleEl.querySelector('.yh-bubble-word-text').textContent = base;
@@ -1184,44 +1184,52 @@
     setActionButton(loggedIn ? 'add' : 'none');
 
     const transEl = bubbleEl.querySelector('.yh-bubble-trans');
-    transEl.textContent = '';
-    const loading = document.createElement('span');
-    loading.className = 'yh-bubble-loading';
-    loading.textContent = t('bubbleLoading', '查询中…');
-    transEl.appendChild(loading);
+    renderTrans(transEl, trans);
 
     positionBubbleRect(getWordRect(w), lastMouse);
-
-    // 与气泡同时出现：悬浮满 600ms 后才发音（不再悬浮即发音）
     speakWord(base);
+  }
+
+  /**
+   * 未高亮单词的释义浮层：现查有道释义，并给「加入生词本」按钮。
+   * 与高亮词浮层共用同一 bubbleEl，区别在动作按钮（add 而非 delete）。
+   * 改造后：仅在确认有非空释义后才呈现浮窗并播放发音，查无释义静默忽略。
+   */
+  function showUnhighlightBubble(word, w) {
+    if (!isExtAlive()) return;   // 定时器可能在扩展重载之后才到期
+    // 归一词形：去除所有格撇号（patients' → patients，patient's → patient），
+    // 再走变体匹配（patients → patient）。「加入生词本」只写入归一化词形。
+    const base = WordMatcher.normalizePossessive(word);
+    const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+    if (isLikelyEnglish && !isLikelyEnglish(base)) return;
+
+    const canonical = wordMatcher.lookup(base);
+    const key = base.toLowerCase();
 
     // 已在生词本（含变体匹配）：直接展示释义，不提供「加入」
-    if (canonical && wordInfos[canonical]) {
+    if (canonical && wordInfos[canonical] && wordInfos[canonical].trans) {
+      displayUnhighlightBubble(base, wordInfos[canonical].trans, w);
       setActionButton('none');
-      renderTrans(transEl, wordInfos[canonical].trans || '');
       return;
     }
 
-    const key = base.toLowerCase();
-    // 已缓存释义（首次查询成功）→ 直接展示，不重复打网络、也不误显示"暂无释义"
+    // 已缓存释义（首次查询成功）→ 直接展示
     if (wordInfos[key] && wordInfos[key].trans) {
-      renderTrans(transEl, wordInfos[key].trans);
+      displayUnhighlightBubble(base, wordInfos[key].trans, w);
       return;
     }
     if (lookupTried.has(key)) {
-      renderTrans(transEl, '');   // 查过没查到 →（暂无释义）
       return;
     }
 
     safeSendMessage({ type: 'lookup', word: base }, (res) => {
-      if (!res) { lookupTried.add(key); return; }
       lookupTried.add(key);
-      const trans = (res && res.ok && res.trans) || '';
-      if (trans) wordInfos[key] = { word: base, phonetic: '', trans };   // 记进词表，后续悬浮直接用
-      if (bubbleWord !== base) return;                              // 已切到别的词
-      if (!bubbleEl || bubbleEl.style.display === 'none') return;   // 气泡已收起
-      renderTrans(transEl, trans);
-      positionBubbleRect(getWordRect(w), lastMouse);                // 内容变长，重新定位
+      if (!res || !res.ok) return;
+      const trans = (res && res.trans) ? String(res.trans).trim() : '';
+      if (!trans) return; // 查无有效释义，静默跳过，不弹窗不发音
+      wordInfos[key] = { word: base, phonetic: '', trans };   // 记进词表，后续悬浮直接用
+      if (!isExtAlive()) return;
+      displayUnhighlightBubble(base, trans, w);
     });
   }
 
@@ -1243,6 +1251,8 @@
       if (t && t.textContent) word = t.textContent.trim();
     }
     if (!word) { console.warn('[YH] 发音按钮：未取到当前单词'); return; }
+    const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+    if (isLikelyEnglish && !isLikelyEnglish(word)) return;
     logDebug('发音按钮点击:', word);
     // force=true：按钮点击是明确意图，绕过「悬浮自动发音」开关
     safeSendMessage({ type: 'tts', word, force: true });
@@ -1252,6 +1262,8 @@
   function speakWord(word) {
     if (settings.ttsToggle === false) return;
     if (!word || word === lastSpokenWord) return;
+    const isLikelyEnglish = (WordMatcher.isLikelyEnglishWord || globalThis.isLikelyEnglishWord);
+    if (isLikelyEnglish && !isLikelyEnglish(word)) return;
     lastSpokenWord = word;
     safeSendMessage({ type: 'tts', word });
   }
