@@ -173,8 +173,15 @@ describe('Youdao Login Authentication & Verification', () => {
 
     // Verified session cookies must be recognized as login
     expect(isLoginCookie({ name: 'DICT_SESS', value: 'v2|sample-session-token' })).toBe(true);
+    expect(isLoginCookie({ name: 'DICT_LOGIN', value: '1||1730000000' })).toBe(true);
+    expect(isLoginCookie({ name: 'DICT_PERS', value: 'v2|weixin||sample' })).toBe(true);
     expect(isLoginCookie({ name: 'YNOTE_SESS', value: 'sample-ynote-token' })).toBe(true);
+    expect(isLoginCookie({ name: 'YNOTE_LOGIN', value: '3||sample' })).toBe(true);
     expect(isLoginCookie({ name: 'OUTFOX_CNR_MEMBER_LOGIN', value: 'member-login-token' })).toBe(true);
+    expect(isLoginCookie({ name: 'OUTFOX_CNR_MEMBER', value: 'true' })).toBe(true);
+    expect(isLoginCookie({ name: 'USER_ID', value: 'my_netease_id' })).toBe(true);
+    expect(isLoginCookie({ name: 'S_INFO', value: 'sample-sinfo' })).toBe(true);
+    expect(isLoginCookie({ name: 'NTES_SESS', value: 'sample-ntes-sess' })).toBe(true);
 
     // P_INFO NetEase passport cookie
     expect(isLoginCookie({ name: 'P_INFO', value: 'testuser@163.com|1730000000|0|' })).toBe(true);
@@ -185,73 +192,57 @@ describe('Youdao Login Authentication & Verification', () => {
 
   it('determines login status via server endpoint accurately', async () => {
     const originalFetch = globalThis.fetch;
+    const originalChrome = (globalThis as any).chrome;
 
     try {
-      // 1. Unauthenticated response from accountinfo (code: 2035)
-      globalThis.fetch = (async (url: any) => {
-        if (String(url).includes('accountinfo')) {
-          return {
-            ok: true,
-            status: 200,
-            json: async () => ({ msg: 'NO_LOGIN', code: 2035 }),
-            text: async () => JSON.stringify({ msg: 'NO_LOGIN', code: 2035 }),
-          };
-        }
-        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
-      }) as any;
+      // 1. When no login cookies exist in browser -> returns not logged in
+      (globalThis as any).chrome = {
+        cookies: {
+          getAll: (_details: any, cb: any) => cb([]),
+        },
+      };
 
       const unauthResult = await checkLoginServer();
       expect(unauthResult.ok).toBe(false);
       expect(unauthResult.loggedIn).toBe(false);
       expect(unauthResult.needLogin).toBe(true);
 
-      // 2. Authenticated response from accountinfo (code: 0)
+      // 2. When valid login cookies exist and page is normal -> returns logged in
+      (globalThis as any).chrome = {
+        cookies: {
+          getAll: (_details: any, cb: any) => cb([{ name: 'DICT_SESS', value: 'valid-sess' }]),
+        },
+      };
+
       globalThis.fetch = (async (url: any) => {
-        if (String(url).includes('accountinfo')) {
-          return {
-            ok: true,
-            status: 200,
-            json: async () => ({ code: 0, userId: 'youdao_user_888' }),
-            text: async () => JSON.stringify({ code: 0, userId: 'youdao_user_888' }),
-          };
-        }
-        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+        return {
+          ok: true,
+          status: 200,
+          text: async () => '<html><script>window.__NUXT__={};</script></html>',
+        };
       }) as any;
 
       const authResult = await checkLoginServer();
       expect(authResult.ok).toBe(true);
       expect(authResult.loggedIn).toBe(true);
       expect(authResult.needLogin).toBe(false);
-      expect(authResult.userId).toBe('youdao_user_888');
 
-      // 3. Fallback when accountinfo fails but SSR page has unauthenticated markers
+      // 3. When login cookies exist but page is redirected to passport login page (no __NUXT__)
       globalThis.fetch = (async (url: any) => {
-        if (String(url).includes('accountinfo')) {
-          return { ok: false, status: 500, text: async () => 'error', json: async () => ({}) };
-        }
-        if (String(url).includes('webwordbook/wordlist')) {
-          const anonymousSsrHtml = `
-            <!doctype html><html><body>
-            <a href="javascript:;" class="login">登录</a>
-            <script>window.__NUXT__=(function(a,b,c){return {state:{login:{yduserid:a,isLogin:b}}}}))("",false,"/");</script>
-            </body></html>
-          `;
-          return {
-            ok: true,
-            status: 200,
-            text: async () => anonymousSsrHtml,
-            json: async () => ({}),
-          };
-        }
-        return { ok: true, status: 200, text: async () => '', json: async () => ({}) };
+        return {
+          ok: true,
+          status: 200,
+          text: async () => '<html><body><a href="https://reg.163.com/login">请登录</a></body></html>',
+        };
       }) as any;
 
-      const fallbackResult = await checkLoginServer();
-      expect(fallbackResult.ok).toBe(false);
-      expect(fallbackResult.loggedIn).toBe(false);
-      expect(fallbackResult.needLogin).toBe(true);
+      const expiredResult = await checkLoginServer();
+      expect(expiredResult.ok).toBe(false);
+      expect(expiredResult.loggedIn).toBe(false);
+      expect(expiredResult.needLogin).toBe(true);
     } finally {
       globalThis.fetch = originalFetch;
+      (globalThis as any).chrome = originalChrome;
     }
   });
 });

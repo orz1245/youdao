@@ -15,6 +15,8 @@ export default defineConfig({
       'http://www.youdao.com/*',
       'https://youdao.com/*',
       'http://youdao.com/*',
+      'https://*.youdao.com/*',
+      'http://*.youdao.com/*',
     ],
     action: {
       default_icon: {

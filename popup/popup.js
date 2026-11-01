@@ -138,19 +138,29 @@ function showConfirm(message, confirmLabel) {
 
 // 有道登录会话 cookie 已知名称（站点改版后可能变化，待浏览器验证）
 const KNOWN_LOGIN_COOKIES = [
-  'DICT_SESS', 'OUTFOX_CNR_MEMBER_LOGIN', 'YNOTE_SESS'
+  'DICT_SESS', 'DICT_LOGIN', 'DICT_PERS', 'DICT_UT',
+  'YNOTE_SESS', 'YNOTE_LOGIN', 'OUTFOX_CNR_MEMBER_LOGIN',
+  'OUTFOX_CNR_MEMBER', 'USER_ID', 'P_INFO', 'S_INFO', 'NTES_SESS', 'NETEASE_WDA_UID'
+];
+
+const VISITOR_COOKIE_NAMES = [
+  'OUTFOX_SEARCH_USER_ID', 'OUTFOX_SEARCH_USER_ID_NCOO',
+  'JSESSIONID', 'yd_tm_task', '___rl__test__cookies', 'i18n_redirected'
 ];
 
 function isLoginCookie(c) {
   if (!c || !c.name) return false;
   const name = c.name.trim();
+  if (VISITOR_COOKIE_NAMES.includes(name)) return false;
   if (KNOWN_LOGIN_COOKIES.includes(name)) {
-    return Boolean(c.value && c.value.trim().length > 0);
-  }
-  if (name === 'P_INFO') {
     if (!c.value) return false;
-    const firstPart = c.value.split('|')[0].trim();
-    return Boolean(firstPart && firstPart.length > 0 && !firstPart.includes('undefined'));
+    const val = c.value.trim();
+    if (!val || val === '""') return false;
+    if (name === 'P_INFO') {
+      const firstPart = val.split('|')[0].trim();
+      return Boolean(firstPart && firstPart.length > 0 && !firstPart.includes('undefined'));
+    }
+    return true;
   }
   return false;
 }
@@ -167,11 +177,29 @@ function readCookiesFor(url) {
   });
 }
 
+function readDomainCookies(domain) {
+  return new Promise((resolve) => {
+    chrome.cookies.getAll({ domain }, (cs) => {
+      if (chrome.runtime.lastError) { resolve([]); return; }
+      resolve(cs || []);
+    });
+  });
+}
+
 /**
  * 通过 cookie 判断有道登录态（严格匹配真实登录会话，排除访客标识）
  */
 async function detectLoginByCookie() {
-  const sources = ['https://dict.youdao.com/', 'https://www.youdao.com/', 'https://youdao.com/'];
+  const domainCookies = await readDomainCookies('youdao.com');
+  if (domainCookies.some(isLoginCookie)) return true;
+
+  const sources = [
+    'https://dict.youdao.com/',
+    'https://www.youdao.com/',
+    'https://youdao.com/',
+    'https://c.youdao.com/',
+    'https://note.youdao.com/',
+  ];
   for (const url of sources) {
     const cookies = await readCookiesFor(url);
     if (cookies.some(isLoginCookie)) {

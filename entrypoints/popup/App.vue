@@ -633,6 +633,9 @@ function checkLogin(callback: (loggedIn: boolean) => void) {
     // 未登录或首次安装时，检查是否有实际登录 Cookie
     if (!s.loggedIn) {
       detectLoginByCookie().then((hasCookie) => {
+        if (hasCookie) {
+          chrome.storage.local.set({ loggedIn: true });
+        }
         callback(hasCookie);
       });
       return;
